@@ -2,7 +2,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
 
 const {MongoClient, ObjectId} = require("mongodb");
-const mongoURI = "mongodb+srv://yoyo17233:databasepassword@a3db.nouer.mongodb.net/?retryWrites=true&w=majority&ssl=true&appName=a3db";
+const mongoURI = "mongodb+srv://keluliu5:meiguo2013@a3db.nouer.mongodb.net/?retryWrites=true&w=majority&ssl=true&appName=a3db";
 const client = new MongoClient(mongoURI);
 
 async function connectDB() {
