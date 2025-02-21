@@ -1,21 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
-
-const {MongoClient, ObjectId} = require("mongodb");
-const mongoURI = "mongodb+srv://yoyo17233:databasepassword@a3db.nouer.mongodb.net/?retryWrites=true&w=majority&ssl=true&appName=a3db";
-const client = new MongoClient(mongoURI);
-
-async function connectDB() {
-  try {
-      await client.connect();
-      console.log("Connected to MongoDB ✅");
-      // await solveCollection.deleteMany({}); UNCOMMENTING THIS LINE WILL DELETE ALL SOLVES IN THE DB
-  }   
-  catch (err) {
-      console.error("MongoDB Connection Error:", err);
-  }
-}
-
+import {userCollection} from "@/lib/DatabaseConnectionUtils";
 
 const handler = NextAuth({
   providers: [
@@ -27,9 +12,6 @@ const handler = NextAuth({
       },
       async authorize(credentials, req) {
         try {
-          await connectDB();
-          const db = client.db("a4database");
-          const userCollection = db.collection("users");
           const user = await userCollection.findOne({ email: credentials.email });
 
           if (!user) {

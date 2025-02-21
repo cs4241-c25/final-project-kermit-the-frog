@@ -1,31 +1,10 @@
-console.log("data route running");
+console.log("Delete route running");
 
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
 import { authOptions } from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth"
-
-const {MongoClient, ObjectId} = require("mongodb");
-const mongoURI = "mongodb+srv://yoyo17233:databasepassword@a3db.nouer.mongodb.net/?retryWrites=true&w=majority&ssl=true&appName=a3db";
-const client = new MongoClient(mongoURI);
-var userCollection;
-var solveCollection;
-
-async function connectDB() {
-  try {
-      await client.connect();
-      console.log("Connected to MongoDB ✅");
-      const db = client.db("a4database");
-      userCollection = db.collection("users");
-      solveCollection = db.collection("solves");
-      //await solveCollection.deleteMany({}); //UNCOMMENTING THIS LINE WILL DELETE ALL SOLVES IN THE DB
-  }   
-  catch (err) {
-      console.error("MongoDB Connection Error:", err);
-  }
-}
-
-await connectDB();
+import {solveCollection} from "@/lib/DatabaseConnectionUtils";
 
 export async function POST(req) {
   const { id } = await req.json();
