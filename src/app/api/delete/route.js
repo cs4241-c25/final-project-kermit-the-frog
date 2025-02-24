@@ -1,7 +1,7 @@
+import {ObjectId} from "mongodb";
+
 console.log("Delete route running");
 
-import CredentialsProvider from "next-auth/providers/credentials";
-import NextAuth from "next-auth"
 import { authOptions } from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth"
 import {solveCollection} from "@/lib/DatabaseConnectionUtils";
