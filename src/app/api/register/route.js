@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
-import {userCollection} from "@/lib/DatabaseConnectionUtils";
+import {userCollection} from "@/lib/db";
 
 export async function POST(req) {
   console.log("setting email and password to below:");

@@ -1,6 +1,6 @@
 import {authOptions} from "next-auth/providers/credentials";
 import {getServerSession} from "next-auth"
-import {solveCollection, userCollection} from "@/lib/DatabaseConnectionUtils";
+import {solveCollection, userCollection} from "@/lib/db";
 
 async function getUserIdByEmail(email) {
     try {

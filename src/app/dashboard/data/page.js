@@ -1,5 +1,5 @@
 'use client'
-import './../globals.css';
+import '@/styles/globals.css';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -48,7 +48,7 @@ export default function Data() {
             Kermit Timer
           </Link>
           <div className="flex space-x-10 ml-auto">
-            <Link href="/timer">Back</Link>
+            <Link href="/dashboard/timer">Back to Timer</Link>
           </div> 
         </div>
       </nav>

@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
 import { authOptions } from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth"
-import {solveCollection} from "@/lib/DatabaseConnectionUtils";
+import {solveCollection} from "@/lib/db";
 
 export async function POST(req) {
   const { id } = await req.json();

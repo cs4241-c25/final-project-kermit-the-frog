@@ -1,10 +1,8 @@
 'use client';
-
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation'; 
 import { useEffect } from 'react';
-
-import './../globals.css';
+import '@/styles/globals.css';
 import Link from 'next/link';
 
 export default function Register() {
@@ -13,7 +11,7 @@ export default function Register() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push('/timer');
+      router.push('/dashboard/timer');
     }
   }, [status, router]);
 
@@ -35,7 +33,7 @@ export default function Register() {
     if (data.success) {
       console.log('Registration successful');
       alert('Registration successful');
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     } else {
       alert(data.message);
       console.log(data.message);
@@ -49,7 +47,7 @@ export default function Register() {
         <Link href = "/">
           <div className="font-bold">Kermit Timer</div>
         </Link>
-        <Link href = "/login">
+        <Link href = "/auth/login">
           <div className="flex space-x-10 ml-auto">Log In</div>
         </Link>
       </div>
@@ -69,7 +67,7 @@ export default function Register() {
           </div>
           <button className="bg-gray-400 p-2 m-8 rounded-xl justify-center items-center" type="submit">Register</button>
         </form>
-        <Link href="/login" className="text-black">Already have an account? Log in</Link>
+        <Link href="/auth/login" className="text-black">Already have an account? Log in</Link>
       </div>
     </section>
   </div>

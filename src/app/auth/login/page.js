@@ -1,5 +1,5 @@
 'use client';
-import './../globals.css';
+import '@/styles/globals.css';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push('/timer');
+      router.push('/dashboard/timer');
     }
   }, [status, router]);
 
@@ -30,7 +30,7 @@ export default function Login() {
     try {
       const result = await signIn('credentials', {
         ...formData,
-        callbackUrl: '/timer',
+        callbackUrl: '/dashboard/timer',
         redirect: true
       });
     } catch (error) {
@@ -46,8 +46,8 @@ export default function Login() {
         <Link href = "/">
           <div className="font-bold">Kermit Timer</div>
         </Link>
-        <Link href = "/login">
-          <div className="flex space-x-10 ml-auto">Log In</div>
+        <Link href = "/auth/register">
+          <div className="flex space-x-10 ml-auto">Register</div>
         </Link>
       </div>
     </nav>
@@ -65,7 +65,7 @@ export default function Login() {
           </div>
           <button className="bg-gray-400 p-2 m-8 rounded-xl justify-center items-center" type="submit">Log In</button>
         </form>
-        <Link href="/register" className ="text-black">New here? Register now</Link>
+        <Link href="/auth/register" className ="text-black">New here? Register now</Link>
       </div>
     </section>
   </div>

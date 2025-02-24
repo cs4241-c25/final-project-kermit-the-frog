@@ -1,9 +1,10 @@
 'use client';
-import '../globals.css';
+import '@/styles/globals.css';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 let startTime = 0;
 let elapsedTime = 0;
@@ -30,6 +31,7 @@ let timerElement;
 export default function Timer() {
   const router = useRouter();
   const [error, setError] = useState('');
+  const session = useSession();
 
   useEffect(() => {
     timerElement = document.getElementById("timer");
@@ -49,6 +51,12 @@ export default function Timer() {
       document.removeEventListener("keyup", keyUpHandler);
     };
   }, []);
+
+  useEffect(() => {
+    if (session.status === "authenticated") {
+      router.push('/dashboard/timer');
+    }
+  }, [session.status, router]);
 
   function keyDownHandler() {
     updateTimerColor();

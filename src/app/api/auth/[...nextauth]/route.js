@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
-import {userCollection} from "@/lib/DatabaseConnectionUtils";
+import {userCollection} from "@/lib/db";
 
 const handler = NextAuth({
   providers: [
@@ -34,7 +34,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/Iogin",
+    signIn: "/auth/Iogin",
   },
   session: {
     strategy: "jwt",
