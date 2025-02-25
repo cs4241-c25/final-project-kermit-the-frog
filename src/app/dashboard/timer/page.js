@@ -161,7 +161,7 @@ export default function Timer() {
         updateTable();
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error(' addTimetoDB Error:', error);
         alert("Error: Unauthorized, please restart your browser");
       });
   }
@@ -263,30 +263,30 @@ export default function Timer() {
             <button class="menu-btn font-bold delete-btn" data-id="${solve._id}">DELETE</button>
           </div>
         `;
-  
-        timelist.appendChild(listItem);
-  
-        listItem.querySelector('.delete-btn').addEventListener('click', (event) => {
-          const id = event.target.dataset.id;
-          handleDelete(id);
-        });
-  
-        listItem.querySelectorAll('.status-btn').forEach(button => {
-          button.addEventListener('click', (event) => {
+
+          timelist.appendChild(listItem);
+
+          listItem.querySelector('.delete-btn').addEventListener('click', (event) => {
             const id = event.target.dataset.id;
-            const status = event.target.dataset.status;
-            handleStatusChange(id, status);
+            handleDelete(id);
+          });
+
+          listItem.querySelectorAll('.status-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+              const id = event.target.dataset.id;
+              const status = event.target.dataset.status;
+              handleStatusChange(id, status);
+            });
+          });
+
+          listItem.addEventListener('click', () => {
+            const menu = listItem.querySelector('.dropdown-menu');
+            menu.classList.toggle('hidden');
           });
         });
-  
-        listItem.addEventListener('click', () => {
-          const menu = listItem.querySelector('.dropdown-menu');
-          menu.classList.toggle('hidden');
-        });
-      });
-    })
+      })
     .catch((error) => {
-      console.error('Error:', error);
+      console.error('UpdateTable Error:', error);
       alert("Error: Unauthorized, please restart your browser");
     });
   }

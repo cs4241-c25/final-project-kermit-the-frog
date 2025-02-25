@@ -1,5 +1,8 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import {saveEmailToDB} from "@/app/api/register/route";
 import {userCollection} from "@/lib/db";
 
 const handler = NextAuth({
@@ -30,7 +33,15 @@ const handler = NextAuth({
           return null;
         }
       }
-    })
+    }),
+      GitHubProvider({
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      }),
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
   ],
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
@@ -38,6 +49,21 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    //When the signIn function is used with any auth routes, it calls a function to check if registered
+      async jwt({ token, account, profile }) {
+
+          if (account && profile) {
+              token.email = profile.email;
+              await saveEmailToDB(profile.email);
+          }
+          return token
+      },
+      async session({ session,token }) {
+        session.email = token.email;
+        return session;
+      }
   }
 })
 
