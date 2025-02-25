@@ -1,4 +1,4 @@
-import {userCollection} from "@/lib/DatabaseConnectionUtils";
+import {userCollection} from "@/lib/db";
 
 export async function POST(req) {
   console.log("setting email and password to below:");

@@ -1,9 +1,9 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth"
-import {userCollection} from "@/lib/DatabaseConnectionUtils";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import {saveEmailToDB} from "@/app/api/register/route";
+import {userCollection} from "@/lib/db";
 
 const handler = NextAuth({
   providers: [
@@ -44,6 +44,9 @@ const handler = NextAuth({
       })
   ],
   secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/auth/login",
+  },
   session: {
     strategy: "jwt",
   },

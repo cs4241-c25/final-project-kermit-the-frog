@@ -1,9 +1,8 @@
 'use client';
-import '../globals.css';
-import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 let startTime = 0;
 let elapsedTime = 0;
@@ -30,6 +29,7 @@ let timerElement;
 export default function Timer() {
   const router = useRouter();
   const [error, setError] = useState('');
+  const session = useSession();
 
   useEffect(() => {
     timerElement = document.getElementById("timer");
@@ -49,6 +49,12 @@ export default function Timer() {
       document.removeEventListener("keyup", keyUpHandler);
     };
   }, []);
+
+  useEffect(() => {
+    if (session.status === "authenticated") {
+      router.push('/dashboard/timer');
+    }
+  }, [session.status, router]);
 
   function keyDownHandler() {
     updateTimerColor();
@@ -285,23 +291,12 @@ export default function Timer() {
 
   return (
     <div className="bg-gray-300 flex flex-col h-screen overflow-hidden">
-      <nav className="bg-red-700 shadow-2xl sticky top-0 p-4 w-full">
-        <div className="container mx-auto flex text-4xl justify-between items-center">
-          <Link href="/timer" className="font-bold">Kermit Timer</Link>
-          <div className="flex space-x-10 ml-auto">
-            <Link href="/data" className="">Show my Data</Link>
-            <button type="submit" onClick={handleSubmit}>Log out</button>
-          </div>
-        </div>
-      </nav>
-
       <div className="flex flex-1 overflow-hidden">
         <div className="bg-gray-800 text-white w-64 p-4 overflow-y-auto flex flex-col">
           <h2 className="text-4xl font-bold mb-4">Times</h2>
           <ul id="timelist" className="space-y-2 text-2xl text-center"></ul>
         </div>
         
-
         <div className="flex-1 flex justify-center items-center">
           <p id="timer" className={timerClass}>0.000</p>
         </div>

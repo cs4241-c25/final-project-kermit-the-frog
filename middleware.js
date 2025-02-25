@@ -6,14 +6,14 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const isAuth = !!req.cookies.get("next-auth.session-token");
 
-    if (!isAuth && ["/data", "/timer"].includes(pathname)) {
+    if (!isAuth && ["/dashboard/data", "/dashboard/timer"].includes(pathname)) {
       console.log("redirecting unauthed user to home");
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    if (isAuth && ["/", "/login", "/register"].includes(pathname)) {
+    if (isAuth && ["/", "/auth/login", "/auth/register"].includes(pathname)) {
       console.log("redirecting authed user to timer");
-      return NextResponse.redirect(new URL("/timer", req.url));
+      return NextResponse.redirect(new URL("/dashboard/timer", req.url));
     }
   },
   {
@@ -23,5 +23,5 @@ export default withAuth(
   });
 
 export const config = {
-  matcher: ['/timer', '/data']
+  matcher: ['/dashboard/timer', '/dashboard/data', '/auth/login', '/auth/register', '/']
 };
