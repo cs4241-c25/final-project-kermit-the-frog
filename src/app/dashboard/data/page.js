@@ -1,6 +1,4 @@
 'use client'
-import '@/styles/globals.css';
-import Link from 'next/link';
 import { useEffect } from 'react';
 
 export default function Data() {
@@ -42,16 +40,6 @@ export default function Data() {
 
   return (
     <div className="bg-gray-300">
-      <nav className="bg-red-700 shadow-2xl sticky top-0 p-4 left-0">
-        <div className="container mx-auto flex text-4xl justify-between items-center">
-          <Link href="/" className="font-bold">
-            Kermit Timer
-          </Link>
-          <div className="flex space-x-10 ml-auto">
-            <Link href="/dashboard/timer">Back to Timer</Link>
-          </div> 
-        </div>
-      </nav>
       <section className="h-screen flex items-center justify-center">
         <div className="md:w-1/2 text-center p-8">
             <button id="accountData" className="bg-gray-400 text-5xl text-black p-12 m-8 rounded-xl justify-center items-center">All Account Data:</button>

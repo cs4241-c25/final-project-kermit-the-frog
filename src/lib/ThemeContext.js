@@ -1,6 +1,12 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
 
+const themes = {
+  light: 'Light',
+  dark: 'Dark',
+  kermit: 'Kermit'
+};
+
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
@@ -9,7 +15,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     // Check local storage for saved theme
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
+    if (savedTheme && themes[savedTheme]) {
       setTheme(savedTheme);
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark');
@@ -22,18 +28,14 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(current => {
-      switch (current) {
-        case 'light': return 'dark';
-        case 'dark': return 'kermit';
-        default: return 'light';
-      }
-    });
+  const value = {
+    theme,
+    setTheme,
+    themes
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

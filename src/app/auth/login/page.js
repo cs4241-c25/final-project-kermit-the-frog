@@ -1,20 +1,22 @@
 'use client';
-import '@/styles/globals.css';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-import {useRouter, useSearchParams} from 'next/navigation';
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
-import { GSP_NO_RETURNED_VALUE } from 'next/dist/lib/constants';
-
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function Login() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Group all useState hooks together
+  const [isClient, setIsClient] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [signUpState, setSignUpState] = useState(false);
-  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -28,7 +30,9 @@ export default function Login() {
     }
   }, [searchParams]);
 
-
+  if (!isClient) {
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,21 +73,10 @@ export default function Login() {
   }
 
   return (
-    <div className="bg-gray-300 overflow-hidden" >
-    <nav className="bg-red-700 shadow-2xl sticky top-0 left-0 p-4 mb-2">
-      <div className="container mx-auto flex text-4xl sticky justify-between items-center">
-        <Link href = "/">
-          <div className="font-bold">Kermit Timer</div>
-        </Link>
-        <Link href = "/auth/register">
-          <div className="flex space-x-10 ml-auto">Register</div>
-        </Link>
-      </div>
-    </nav>
-    <section className="min-h-screen flex items-center justify-center">
+    <section className="flex flex-col items-center justify-center h-[calc(100vh-92px)]">
       <div className="md:w-1/2 text-center p-8">
-        <h1 className="text-5xl text-black">Log in</h1>
-        <form className="text-3xl text-black p-4 pb-0" onSubmit={handleSubmit}>
+        <h1 className="text-5xl ">Log in</h1>
+        <form className="text-3xl  p-4 pb-0" onSubmit={handleSubmit}>
           <div className="flex items-center justify-center">
             {
                 loginError && (
@@ -114,31 +107,28 @@ export default function Login() {
                      required/>
             </div>
           </div>
-          <button className="bg-gray-400 py-2 p-4 m-2 text-2xl rounded-xl justify-center items-center active:bg-gray-600 cursor-pointer" type="submit">Log In</button>
+          <button className="button w-3/5" type="submit">Log In</button>
         </form>
-        <Link href="/auth/register" className ="text-black">New here? Register now</Link>
         <div className="mt-4 mb-4 text-center">
           <button onClick={handleGitHubLogin}
-                  className={'py-2 p-4 bg-button bg-black text-white font-semibold border border-black rounded-md hover:bg-gray-900 hover:border-gray-900 cursor-pointer active:bg-gray-600'}>
-                    <span className={"flex justify-center items-center gap-2"}>
-                        <img src='/github.svg' alt={"GitHub_Logo"} width={"30px"}/>
+                  className="py-2 p-4 bg-black text-white font-semibold border border-black rounded-md hover:bg-gray-900 hover:border-gray-900 cursor-pointer active:bg-gray-600">
+                    <span className="flex justify-center items-center gap-2">
+                        <img src="/github.svg" alt="GitHub" width="30" height="30" />
                         Continue with GitHub
                     </span>
           </button>
         </div>
         <div className="mt-4 mb-4 text-center">
           <button onClick={handleGoogleLogin}
-                  className={'py-2 p-4 bg-button bg-black text-white font-semibold border border-black rounded-md hover:bg-gray-900 hover:border-gray-900 cursor-pointer active:bg-gray-600'}>
-                    <span className={"flex justify-center items-center gap-2"}>
-                      {/* With Styles change asset depending if on light or dark mode, default is light */}
-                      <img src={'/google.svg'} alt={'Continue with Google'} width={"30px"} />
+                  className="py-2 p-4 bg-black text-white font-semibold border border-black rounded-md hover:bg-gray-900 hover:border-gray-900 cursor-pointer active:bg-gray-600">
+                    <span className="flex justify-center items-center gap-2">
+                      <img src="/google.svg" alt="Google" width="30" height="30" />
                       Continue with Google
                     </span>
           </button>
         </div>
-        <Link href="/auth/register" className ="text-black text-xl hover:text-button-hover hover:text-blue-600 cursor-pointer">New here? Register now</Link>
+        <Link href="/auth/register" className =" text-xl hover:text-button-hover hover:text-blue-600 cursor-pointer">New here? Register now</Link>
       </div>
     </section>
-  </div>
   );
 }

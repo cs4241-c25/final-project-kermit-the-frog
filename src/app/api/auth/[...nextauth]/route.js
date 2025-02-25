@@ -45,7 +45,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/auth/Iogin",
+    signIn: "/auth/login",
   },
   session: {
     strategy: "jwt",
