@@ -2,33 +2,16 @@
 import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-
-function LoginContent() {
-  const searchParams = useSearchParams();
-  const [signUpState, setSignUpState] = useState(false);
-
-  useEffect(() => {
-    if(searchParams.get('signupSuccess') === 'true') {
-      setSignUpState(true);
-    }
-  }, [searchParams]);
-
-  return signUpState && (
-    <div className='p-2 text-xl'>
-      &#128712; Account created. Log in to continue.
-    </div>
-  );
-}
+import { useState, useEffect } from 'react';
 
 export default function Login() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Group all useState hooks together
   const [isClient, setIsClient] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [signUpState, setSignUpState] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -39,6 +22,12 @@ export default function Login() {
       router.push('/dashboard/timer');
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if(searchParams.get('signupSuccess') === 'true') {
+      setSignUpState(true);
+    }
+  }, [searchParams]);
 
   if (!isClient) {
     return null;
@@ -97,9 +86,13 @@ export default function Login() {
             }
           </div>
           <div className="flex items-center justify-center">
-            <Suspense fallback={null}>
-              <LoginContent />
-            </Suspense>
+            {
+              signUpState && (
+                    <div className ='p-2 text-xl'>
+                      &#128712; Account created. Log in to continue.
+                    </div>
+              )
+            }
           </div>
           <div className="flex flex-col my-auto">
             <div className="m-2" >
