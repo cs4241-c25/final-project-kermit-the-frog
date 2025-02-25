@@ -1,5 +1,3 @@
-import CredentialsProvider from "next-auth/providers/credentials";
-import NextAuth from "next-auth"
 import {userCollection} from "@/lib/DatabaseConnectionUtils";
 
 export async function POST(req) {
@@ -19,6 +17,29 @@ export async function POST(req) {
     }
 
     await userCollection.insertOne({ email, password });
+    return new Response(JSON.stringify({ success: true, message: "Registration successful" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ success: false, message: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+export async function saveEmailToDB(email){
+  try {
+    const existingUser = await userCollection.findOne({ email });
+    if (existingUser) {
+      return new Response(JSON.stringify({ success: false, message: "Email is already registered" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    await userCollection.insertOne({ email, password:null, isOauth:true });
     return new Response(JSON.stringify({ success: true, message: "Registration successful" }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
