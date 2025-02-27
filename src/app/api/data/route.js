@@ -1,7 +1,7 @@
 import {ObjectId} from "mongodb";
-import {authOptions} from "next-auth/providers/credentials";
 import {getServerSession} from "next-auth"
 import {solveCollection, userCollection} from "@/lib/db";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 console.log("data route running");
 

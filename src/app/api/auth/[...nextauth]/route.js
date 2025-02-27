@@ -1,11 +1,11 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import NextAuth from "next-auth"
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import {saveEmailToDB} from "@/app/api/register/route";
 import {userCollection} from "@/lib/db";
+import NextAuth from "next-auth";
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -65,6 +65,7 @@ const handler = NextAuth({
         return session;
       }
   }
-})
+}
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST}

@@ -2,11 +2,11 @@ import {ObjectId} from "mongodb";
 
 console.log("Delete route running");
 
-import { authOptions } from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth"
 import {solveCollection} from "@/lib/db";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
-export async function POST(req) {
+export async function DELETE(req) {
   const { id } = await req.json();
 
   try {
