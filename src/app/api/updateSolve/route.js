@@ -2,11 +2,9 @@ import {ObjectId} from "mongodb";
 
 console.log("data route running");
 
-import CredentialsProvider from "next-auth/providers/credentials";
-import NextAuth from "next-auth"
-import { authOptions } from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth"
 import { solveCollection} from "@/lib/db";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req) {
   const { id, status } = await req.json();
@@ -30,7 +28,7 @@ export async function POST(req) {
     );
 
     if(result.modifiedCount  === 1){
-      return new Response(JSON.stringify({ success: true, message: "Solve removal successful" }), {
+      return new Response(JSON.stringify({ success: true, message: "Solve Update successful" }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
       });

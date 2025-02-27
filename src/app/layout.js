@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import Header from '@/components/Header';
 import "@/styles/globals.css";
 import { usePathname } from 'next/navigation';
+import {Suspense} from "react";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
@@ -22,8 +23,10 @@ export default function RootLayout({ children }) {
       <body className="antialiased bg-background text-text">
         <SessionProvider>
           <ThemeProvider>
-            <Header variant={variant} />
-            {children}
+            <Suspense fallback={<div>Loading...</div>}>
+              <Header variant={variant} />
+              {children}
+            </Suspense>
           </ThemeProvider>
         </SessionProvider>
       </body>
