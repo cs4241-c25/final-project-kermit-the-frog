@@ -16,10 +16,14 @@ export default function Register() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push('/dashboard/timer');
+    const executeSessionCreation = async () => {
+      if (status === "authenticated") {
+        await callCreateDefaultSessions()
+        router.push('/dashboard/timer');
+      }
     }
-  }, [status, router]);
+    executeSessionCreation();
+  }, [status]);
 
   if (!isClient) {
     return null; // or a loading spinner
@@ -43,7 +47,6 @@ export default function Register() {
     if (data.success) {
       console.log('Registration successful');
       window.location.href = '/login?signupSuccess=true';
-      setRedirectFromSignup(true)
     } else {
       setLoginError("Incorrect email or password");
       console.log(data.message);
@@ -64,6 +67,28 @@ export default function Register() {
     } catch (error) {
       console.log("Error signing in with Google:", error);
     }
+  }
+
+  async function createDefaultSessions(sessionName){
+    try {
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({sessionName: sessionName}),
+      })
+      if(response.ok) {
+        console.log("Successfully created sessions: ", sessionName);
+      }
+    } catch (error) {
+      console.log("Error creating default Sessions:", error);
+    }
+  }
+
+  async function callCreateDefaultSessions() {
+    const defaultSession = ['3x3', '5x5', '1'];
+    await Promise.all(defaultSession.map(async name => await createDefaultSessions(name)));
   }
 
   return (

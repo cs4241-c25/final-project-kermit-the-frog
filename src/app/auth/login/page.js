@@ -16,10 +16,14 @@ export default function Login() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push('/dashboard/timer');
+    const executeSessionCreation = async () => {
+      if (status === "authenticated") {
+        await callCreateDefaultSessions()
+        router.push('/dashboard/timer');
+      }
     }
-  }, [status, router]);
+    executeSessionCreation();
+  }, [status]);
 
   useEffect(() => {
     if(searchParams.get('signupSuccess') === 'true') {
@@ -51,6 +55,28 @@ export default function Login() {
       console.error(error);
     }
   };
+
+  async function createDefaultSessions(sessionName){
+    try {
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({sessionName: sessionName}),
+      })
+      if(response.ok) {
+        console.log("Successfully created sessions: ", sessionName);
+      }
+    } catch (error) {
+      console.log("Error creating default Sessions:", error);
+    }
+  }
+
+  async function callCreateDefaultSessions() {
+    const defaultSession = ['3x3', '5x5'];
+    await Promise.all(defaultSession.map(async name => await createDefaultSessions(name)));
+  }
 
   async function handleGitHubLogin() {
     try {
