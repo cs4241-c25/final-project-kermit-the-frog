@@ -92,7 +92,7 @@ export default function Register() {
   }
 
   return (
-    <section className="flex flex-col items-center justify-center h-[calc(100vh-92px)]">
+    <section className="flex flex-col items-center justify-center h-full py-8">
       <div className="md:w-1/2 text-center p-4">
         <h1 className="text-5xl">Register</h1>
         <form className="text-3xl p-4 pb-0" onSubmit={handleSubmit} method="POST">

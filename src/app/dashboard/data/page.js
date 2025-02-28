@@ -39,13 +39,18 @@ export default function Data() {
   }
 
   return (
-    <div className="bg-gray-300">
-      <section className="h-screen flex items-center justify-center">
+    <div className="bg-background/90 flex flex-col h-full">
+      <section className="flex flex-1 items-center justify-center">
         <div className="md:w-1/2 text-center p-8">
-            <button id="accountData" className="bg-gray-400 text-5xl text-black p-12 m-8 rounded-xl justify-center items-center">All Account Data:</button>
-            <ul id="datalist" className="text-black text-2xl">
-              <li>Loading...</li>
-            </ul>
+          <button 
+            id="accountData" 
+            className="button text-text text-4xl p-8 m-4 rounded-xl"
+          >
+            All Account Data:
+          </button>
+          <ul id="datalist" className="text-text text-2xl">
+            <li>Loading...</li>
+          </ul>
         </div>
       </section>
     </div>

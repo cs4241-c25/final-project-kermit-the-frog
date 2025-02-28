@@ -20,12 +20,14 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className="antialiased bg-background text-text">
+      <body className="h-screen flex flex-col bg-background text-text antialiased">
         <SessionProvider>
           <ThemeProvider>
             <Suspense fallback={<div>Loading...</div>}>
               <Header variant={variant} />
-              {children}
+              <main className="flex-1 overflow-y-auto">
+                {children}
+              </main>
             </Suspense>
           </ThemeProvider>
         </SessionProvider>

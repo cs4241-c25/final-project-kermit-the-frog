@@ -23,6 +23,3 @@ export default function Home() {
       </section>
   );
 }
-
-// Vercel testing change
-// Vercel testing change 2

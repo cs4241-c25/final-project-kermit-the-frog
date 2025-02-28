@@ -68,21 +68,25 @@ export default function Header({ variant = 'home' }) {
     
     if (config.links) {
       return (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           {config.links.map((item, index) => (
-            item.href ? (
-              <Link key={index} href={item.href} className={underlineAnimation}>
-                {item.text}
-              </Link>
-            ) : (
-              <button 
-                key={index}
-                onClick={item.action}
-                className={underlineAnimation}
-              >
-                {item.text}
-              </button>
-            )
+            <div key={index} className="flex items-center">
+              {index > 0 && (
+                <span className="mx-4 text-text/30 font-light">|</span>
+              )}
+              {item.href ? (
+                <Link href={item.href} className={underlineAnimation}>
+                  {item.text}
+                </Link>
+              ) : (
+                <button 
+                  onClick={item.action}
+                  className={underlineAnimation}
+                >
+                  {item.text}
+                </button>
+              )}
+            </div>
           ))}
         </div>
       );
@@ -96,20 +100,20 @@ export default function Header({ variant = 'home' }) {
   };
 
   return (
-    <nav className="bg-primary/60 shadow-xl sticky py-4 px-8 w-full flex justify-between items-center text-text text-2xl font-semibold lg:text-4xl">
+    <nav className="bg-primary/60 min-h-20 shadow-xl p-2 lg:py-4 lg:px-8 w-full flex justify-between items-center text-text text-2xl font-semibold lg:text-2xl">
         <Link href="/" className="flex items-center gap-4 font-bold text-text">
-            <img src="/kermit.png" alt="Kermit" width={60} height={60} className="wrap-content w-19 h-19" />
-            <p className="hidden md:block">Kermit-The-Timer</p>
+            <img src="/kermit.png" alt="Kermit" width={60} height={60} className="hidden sm:block wrap-content w-19 h-19" />
+            <p className="hidden lg:block">Kermit-The-Timer</p>
         </Link>
 
-        <div className="absolute left-1/2 transform -translate-x-1/2">
+        <div className="text-center absolute sm:left-1/2 transform sm:-translate-x-1/2">
             {renderNavLinks()}
         </div>
 
         <select
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
-            className="hidden md:block bg-background p-2 rounded-md cursor-pointer"
+            className="hidden md:block dropdown"
         >
             {Object.entries(themes).map(([value, label]) => (
             <option key={value} value={value}>
