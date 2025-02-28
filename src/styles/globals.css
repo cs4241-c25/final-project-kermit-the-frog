@@ -44,6 +44,10 @@
   } */
 
   .button {
-    @apply bg-primary/80 hover:bg-primary text-3xl font-semibold p-4 m-4 rounded-xl justify-center items-center;
+    @apply bg-primary/80 hover:bg-primary active:bg-secondary/50 p-4 m-2 text-3xl font-semibold rounded-xl justify-center items-center transition-colors duration-200;
   }
+
+  .dropdown {
+    @apply bg-background/80 appearance-none focus:outline-none focus:border-none p-2 rounded-md cursor-pointer transition-colors duration-300 text-text;
+}
 }

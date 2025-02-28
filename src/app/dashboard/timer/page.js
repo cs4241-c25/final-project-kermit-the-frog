@@ -1,7 +1,7 @@
 'use client';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function Timer() {
     let startTime = 0;
@@ -27,11 +27,18 @@ export default function Timer() {
     const [updateData, setUpdateData] = useState([]); //Update when any data is changed
     const session = useSession();
     const [dropDown, setDropDown] = useState({}); //Keep a object for each dropdown so multiple can be toggled at once
-    const [timerColor, setTimerColor] = useState("text-black"); //state to track color during presses
+    const [timerColor, setTimerColor] = useState("text-text"); //state to track color during presses
 
     /* Current Session Object to allow direct access to the array*/
     const [currentSession, setCurrentSession] = useState(null);
     const [selectedSession, setSelectedSession] = useState("3x3");
+
+    /* Video-related state and refs */
+    const [videoMode, setVideoMode] = useState(false);
+    const [cameraPermission, setCameraPermission] = useState(null);
+    const videoRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const recordedChunksRef = useRef([]);
 
     /* State Handling Key Presses & Timer */
     /*
@@ -42,6 +49,9 @@ export default function Timer() {
     const [displayedTime, setDisplayedTime] = useState("0.000");
     const [timerStartTime, setTimerStartTime] = useState(0);
     */
+
+    // State for tracking expanded/collapsed state
+    const [expandedPreview, setExpandedPreview] = useState(false);
 
     useEffect(() => {
         if (session.status === "authenticated") {
@@ -79,13 +89,13 @@ export default function Timer() {
 
     function updateTimerColor() {
         if (running) {
-            setTimerColor("text-black");
+            setTimerColor("text-text");
         } else if (ready) {
             setTimerColor("text-green-500");
         } else if (pressed) {
             setTimerColor("text-red-500");
         } else {
-            setTimerColor("text-black");
+            setTimerColor("text-text");
         }
     }
 
@@ -133,6 +143,9 @@ export default function Timer() {
         running = true;
         ready = false;
         updateTimerColor();
+        
+        // Start recording if video mode is on
+        startRecording();
     }
 
     function stopTimer() {
@@ -140,6 +153,9 @@ export default function Timer() {
         running = false;
         updateTimerColor();
         addTimeToDB(elapsedTime, Date.now());
+        
+        // Stop recording if video mode is on
+        stopRecording();
     }
 
     function startTimeoutTimer() {
@@ -237,7 +253,8 @@ export default function Timer() {
     }
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
-        setDropDown({...dropDown, [id]: !dropDown[id]});
+        setDropDown(prev => ({...prev, [id]: !prev[id]}));
+        
     }
 
     /**
@@ -281,63 +298,286 @@ export default function Timer() {
         else if (solve.status === '+2') time = `${(Number(time) + 2).toFixed(3)}+`
 
         return (
-            <li className="time-item" id={solve._id} key={solve._id}>
-                <button className="time-text" onClick={() => toggleDropDown(solve._id)}>{time}</button>
-                {dropDown[solve._id] && (<div className="dropdown-menu bg-black-300 font-semibold text-xl">
-                    <button className="menu-btn p-1" data-id={solve._id}
-                            onClick={(e) => {
-                                handleStatusChange(solve._id, "OK").then(r =>  toggleDropDown(solve._id))
-                            }}>OK
-                    </button>
-                    <button className="menu-btn p-1" data-id={solve._id}
-                            onClick={(e) => handleStatusChange(solve._id, "+2")}>+2
-                    </button>
-                    <button className="menu-btn p-1" data-id={solve._id}
-                            onClick={(e) => handleStatusChange(solve._id, "DNF")}>DNF
-                    </button>
-                    <button className="menu-btn p-1" data-id={solve._id}
-                            onClick={() => handleDelete(solve._id)}>DELETE
-                    </button>
-                </div>)}
+            <li key={solve._id}>
+                <button 
+                    className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
+                        ${dropDown[solve._id] 
+                            ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
+                            : 'rounded-2xl hover:bg-accent/10'
+                        } 
+                        flex items-center justify-center gap-2 transition-all duration-200`}
+                    onClick={() => toggleDropDown(solve._id)}
+                >
+                    <span>{time}</span>
+                    <svg 
+                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve._id] ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                    >
+                        <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M19 9l-7 7-7-7"
+                        />
+                    </svg>
+                </button>
+                <div 
+                    className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
+                        ${dropDown[solve._id] ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
+                >
+                    <div className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
+                        <button className="hover:bg-accent/10 px-2 py-1"
+                            onClick={() => handleStatusChange(solve._id, "OK").then(() => toggleDropDown(solve._id))}
+                        >
+                            OK
+                        </button>
+                        <button className="hover:bg-accent/10 px-2 py-1"
+                            onClick={() => handleStatusChange(solve._id, "+2")}
+                        >
+                            +2
+                        </button>
+                        <button className="hover:bg-accent/10 px-2 py-1"
+                            onClick={() => handleStatusChange(solve._id, "DNF")}
+                        >
+                            DNF
+                        </button>
+                        <button className="hover:bg-accent/10 px-2 py-1 rounded-b-2xl text-red-400"
+                            onClick={() => handleDelete(solve._id)}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </li>
         )
     }
 
+    // First, let's modify the toggleVideoMode function to be more robust
+    const toggleVideoMode = async () => {
+        try {
+            console.log("Toggle video mode clicked, current state:", videoMode);
+            
+            if (!videoMode) {
+                console.log("Attempting to access camera...");
+                
+                // Check if browser supports getUserMedia
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Your browser doesn't support camera access");
+                }
+                
+                // First set videoMode to true so the video element renders
+                setVideoMode(true);
+                
+                // Wait a moment for the video element to be created in the DOM
+                setTimeout(async () => {
+                    try {
+                        if (!videoRef.current) {
+                            console.error("Video element still not available after delay");
+                            throw new Error("Video element not available");
+                        }
+                        
+                        const stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: true,
+                            audio: false
+                        });
+                        
+                        console.log("Camera access granted, setting up video preview");
+                        videoRef.current.srcObject = stream;
+                        setCameraPermission('granted');
+                    } catch (innerErr) {
+                        console.error("Error accessing camera after delay:", innerErr);
+                        setCameraPermission('denied');
+                        setVideoMode(false);
+                        alert(`Camera error: ${innerErr.message}`);
+                    }
+                }, 100); // Short delay to ensure DOM is updated
+                
+            } else {
+                console.log("Turning off video mode, stopping camera");
+                
+                // Stop the camera when turning off video mode
+                if (videoRef.current && videoRef.current.srcObject) {
+                    const tracks = videoRef.current.srcObject.getTracks();
+                    tracks.forEach(track => {
+                        console.log("Stopping track:", track.kind);
+                        track.stop();
+                    });
+                    videoRef.current.srcObject = null;
+                }
+                setVideoMode(false);
+            }
+        } catch (err) {
+            console.error("Error in toggleVideoMode:", err);
+            setCameraPermission('denied');
+            alert(`Camera error: ${err.message || "Could not access camera. Please check your browser permissions."}`);
+            setVideoMode(false);
+        }
+    };
+
+    // Start recording when timer starts
+    const startRecording = () => {
+        if (videoMode && videoRef.current && videoRef.current.srcObject) {
+            recordedChunksRef.current = [];
+            const stream = videoRef.current.srcObject;
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunksRef.current.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link for the recorded video
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `solve-${new Date().toISOString()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            };
+            
+            mediaRecorderRef.current = mediaRecorder;
+            mediaRecorder.start();
+        }
+    };
+
+    // Stop recording when timer stops
+    const stopRecording = () => {
+        if (videoMode && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+        }
+    };
 
     return (
-        <div className="bg-gray-300 flex flex-col h-screen overflow-hidden">
-            <div className="flex flex-1 overflow-hidden">
-                <div className="bg-gray-800 text-white w-64 p-4 overflow-y-auto flex flex-col">
-                    <div className="flex text-black">
-                        <select
-                            value = {selectedSession}
-                            onChange={(e) => setSelectedSession(e.target.value)}>
-                            <option value="3x3" > 3x3 </option>
-                            <option value="5x5" > 5x5 </option>
-                            {
-                                /* State to track the sessions state, which reloads the visible table and other data */
-                                /* Add Option when + is clicked */
-                                /* Only the First 2/3 will have the solver api attached */
-                                /* When the Plus button is clicked open a pop-up to input name information and a submit to call createSession */
-                                /* after its created getSession has to be called aswell */
-                            }
-                        </select>
-                        <button title={"Add Custom Session"} > + </button>
+        <section className="flex h-full">
+            <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
+                <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
+                    <select 
+                        className="dropdown w-full text-xl h-12"
+                        value={selectedSession}
+                        onChange={(e) => setSelectedSession(e.target.value)}
+                    >
+                        <option value="3x3">3x3</option>
+                        <option value="5x5">5x5</option>
+                    </select>
+                    <button 
+                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"  
+                        title="Add Custom Session"
+                    >
+                        +
+                    </button>
+                </div>
+                
+                <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
+                <ul className="space-y-2 text-2xl flex-grow overflow-y-auto">
+                    {updateData.map(createTimeData)}
+                </ul>
+                
+                <div className="mt-auto pt-4 border-t border-text/10">
+                    <div className="flex items-center justify-between">
+                        <label className="text-lg font-medium cursor-pointer" onClick={toggleVideoMode}>
+                            Video Mode {videoMode ? '(On)' : '(Off)'}
+                        </label>
+                        <button 
+                            onClick={toggleVideoMode}
+                            className="relative inline-block w-12 h-6 transition duration-200 ease-in-out"
+                            aria-pressed={videoMode}
+                            role="switch"
+                        >
+                            <span 
+                                className={`block w-full h-full rounded-full transition-colors duration-300 ease-in-out ${videoMode ? 'bg-accent' : 'bg-gray-400'}`}
+                            >
+                                <span 
+                                    className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${videoMode ? 'transform translate-x-6' : ''}`}
+                                ></span>
+                            </span>
+                        </button>
                     </div>
-                    <h2 className="text-4xl font-bold mb-4">Times</h2>
-                    <ul id="timelist" className="space-y-2 text-2xl text-center">
-                        {
-                            updateData.map(createTimeData)
-                        }
-                    </ul>
+                    
+                    {/* Status message for better feedback */}
+                    <div className="text-sm mt-1">
+                        {videoMode && cameraPermission === 'granted' && <p className="text-green-500">Camera active</p>}
+                        {videoMode && !cameraPermission && <p className="text-yellow-500">Initializing camera...</p>}
+                        {cameraPermission === 'denied' && (
+                            <p className="text-red-500">
+                                Camera access denied. Please enable camera permissions.
+                            </p>
+                        )}
+                    </div>
+                    
+                    {/* Video preview with expand/collapse button */}
+                    {videoMode && (
+                        <div className="mt-2 relative">
+                            <video 
+                                ref={videoRef} 
+                                className={`w-full bg-black rounded-lg object-cover transition-all duration-300 ${
+                                    expandedPreview ? 'h-64' : 'h-32'
+                                }`}
+                                autoPlay 
+                                playsInline
+                                muted
+                            />
+                            <div className="absolute bottom-2 right-2 flex gap-2">
+                                {/* Expand/collapse button */}
+                                <button 
+                                    onClick={() => setExpandedPreview(!expandedPreview)}
+                                    className="bg-black/50 text-white p-1 rounded hover:bg-black/70 transition-colors"
+                                    title={expandedPreview ? "Collapse preview" : "Expand preview"}
+                                >
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        className="h-4 w-4" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                    >
+                                        {expandedPreview ? (
+                                            // Collapse icon
+                                            <path 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round" 
+                                                strokeWidth={2} 
+                                                d="M5 15l7-7 7 7" 
+                                            />
+                                        ) : (
+                                            // Expand icon
+                                            <path 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round" 
+                                                strokeWidth={2} 
+                                                d="M19 9l-7 7-7-7" 
+                                            />
+                                        )}
+                                    </svg>
+                                </button>
+                                
+                                {/* Camera preview label */}
+                                <div className="text-xs bg-black/50 text-white px-2 py-1 rounded">
+                                    Camera Preview
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
+            </aside>
 
-                <div className="flex-1 flex justify-center items-center">
-                    <p id='timer' className={`text-9xl font-bold ${timerColor}`}>
-                        0.000
-                    </p>
-                </div>
-            </div>
-        </div>
+            <main className="flex items-center justify-center w-9/12">
+                <p id="timer" className={`text-8xl font-bold ${timerColor}`}>
+                    0.000
+                </p>
+            </main>
+        </section>
     );
 }
