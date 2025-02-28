@@ -56,12 +56,21 @@ export const authOptions = {
 
           if (account && profile) {
               token.email = profile.email;
-              await saveEmailToDB(profile.email);
+              const response = await saveEmailToDB(profile.email);
+              const result = await response.json();
+              if(response.ok){
+                token.id = result._id;
+              } else {
+                console.log("Error adding userID to sessions")
+              }
           }
           return token
       },
       async session({ session,token }) {
-        session.email = token.email;
+        session.user.email = token.email;
+        if(token.id) {
+          session.user.id = token.id;
+        }
         return session;
       }
   }

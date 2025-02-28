@@ -6,7 +6,9 @@ export async function POST(req) {
   console.log(email);
   console.log(password);
   console.log("setting email and password to above - Connecting to DB");
-
+  /*
+  Action Item: Use B-crypt to encrypt the password in our database
+   */
   try {
     const existingUser = await userCollection.findOne({ email });
     if (existingUser) {
@@ -33,14 +35,14 @@ export async function saveEmailToDB(email){
   try {
     const existingUser = await userCollection.findOne({ email });
     if (existingUser) {
-      return new Response(JSON.stringify({ success: false, message: "Email is already registered" }), {
+      return new Response(JSON.stringify({ success: false, message: "Email is already registered", _id: existingUser._id }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    await userCollection.insertOne({ email, password:null, isOauth:true });
-    return new Response(JSON.stringify({ success: true, message: "Registration successful" }), {
+    const newUser = await userCollection.insertOne({ email, password:null, isOauth:true });
+    return new Response(JSON.stringify({ success: true, message: "Registration successful", _id: newUser.insertedId }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });

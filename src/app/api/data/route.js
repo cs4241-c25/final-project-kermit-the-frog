@@ -49,6 +49,7 @@ export async function POST(req) {
 
     const email = session.user.email;
     let userID = await getUserIDByEmail(email);
+    /* with userID and sessions name find sessions row, use the $push to push this information into the array of objects in mongoDB */
     await solveCollection.insertOne({ userID, time, timestamp, status: "OK" });
     return new Response(JSON.stringify({ success: true, message: "Solve added successful" }), {
       status: 201,
@@ -77,7 +78,7 @@ export async function GET(req, res) {
     }
 
     console.log("user authed in UPDATE");
-    console.log("session.user.id:");
+    console.log("session.user.id: ", session.user.id);
     console.log(session.user.email);
     let user = await getUserByEmail(session.user.email);
 

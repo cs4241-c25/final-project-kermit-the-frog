@@ -21,6 +21,7 @@ let connectionCount = 0;
 
 export let userCollection = null;
 export let solveCollection = null;
+export let sessionCollection = null;
 
 /**
  *
@@ -47,10 +48,11 @@ await connectDB();
 
 /* All that is needed is one call to connect to the database, since it is kept open once called */
 async function getCollections() {
-    if (solveCollection === null || userCollection === null) {
+    if (solveCollection === null || userCollection === null || sessionCollection === null) {
         const cachedDB = await connectDB();
         if (solveCollection === null) solveCollection = cachedDB.collection("solves");
         if (userCollection === null) userCollection = cachedDB.collection("users");
+        if (sessionCollection === null) sessionCollection = cachedDB.collection("sessions");
     }
 }
 
