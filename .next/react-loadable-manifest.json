@@ -4,5 +4,35 @@
     "files": [
       "static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js"
     ]
+  },
+  "app\\dataVis\\SolveDen.js -> d3": {
+    "id": "app\\dataVis\\SolveDen.js -> d3",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_d3_src_index_js.js"
+    ]
+  },
+  "app\\dataVis\\TimeDis.js -> d3": {
+    "id": "app\\dataVis\\TimeDis.js -> d3",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_d3_src_index_js.js"
+    ]
+  },
+  "app\\dataVis\\TrendAnaIndex.js -> d3": {
+    "id": "app\\dataVis\\TrendAnaIndex.js -> d3",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_d3_src_index_js.js"
+    ]
+  },
+  "app\\dataVis\\TrendAnaTime.js -> d3": {
+    "id": "app\\dataVis\\TrendAnaTime.js -> d3",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_d3_src_index_js.js"
+    ]
+  },
+  "app\\dataVis\\page.js -> d3": {
+    "id": "app\\dataVis\\page.js -> d3",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_d3_src_index_js.js"
+    ]
   }
 }
