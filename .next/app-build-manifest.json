@@ -6,16 +6,16 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/timer/page": [
+    "/dataVis/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/timer/page.css",
-      "static/chunks/app/timer/page.js"
+      "static/css/app/dataVis/page.css",
+      "static/chunks/app/dataVis/page.js"
     ],
-    "/api/update/route": [
+    "/api/data/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/update/route.js"
+      "static/chunks/app/api/data/route.js"
     ],
     "/api/auth/[...nextauth]/route": [
       "static/chunks/webpack.js",

@@ -1,3 +1,5 @@
 {
-  "/timer/page": "app/timer/page.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/data/route": "app/api/data/route.js",
+  "/dataVis/page": "app/dataVis/page.js"
 }
