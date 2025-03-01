@@ -1,26 +1,35 @@
 'use client'
-import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from 'next-auth/react';
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { ThemeProvider } from '@/lib/ThemeContext';
+import Header from '@/components/Header';
+import "@/styles/globals.css";
+import { usePathname } from 'next/navigation';
+import {Suspense} from "react";
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  
+  // Simple mapping of paths to header variants
+  const variant = 
+    pathname === '/' ? 'home' :
+    pathname === '/auth/login' ? 'login' :
+    pathname === '/auth/register' ? 'register' :
+    pathname === '/dashboard/timer' ? 'timer' :
+    pathname === '/dashboard/data' ? 'data' : 
+    'home';
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="h-screen flex flex-col bg-background text-text antialiased">
         <SessionProvider>
-          {children}
+          <ThemeProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Header variant={variant} />
+              <main className="flex-1 overflow-y-auto">
+                {children}
+              </main>
+            </Suspense>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

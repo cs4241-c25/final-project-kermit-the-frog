@@ -1,31 +1,11 @@
+import {ObjectId} from "mongodb";
+import {getServerSession} from "next-auth"
+import {solveCollection, userCollection} from "@/lib/db";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+
 console.log("data route running");
 
-import CredentialsProvider from "next-auth/providers/credentials";
-import NextAuth from "next-auth"
-import { authOptions } from "next-auth/providers/credentials";
-import { getServerSession } from "next-auth"
-
-const {MongoClient, ObjectId} = require("mongodb");
-const mongoURI = "mongodb+srv://yoyo17233:databasepassword@a3db.nouer.mongodb.net/?retryWrites=true&w=majority&ssl=true&appName=a3db";
-const client = new MongoClient(mongoURI);
-var userCollection;
-var solveCollection;
-
-async function connectDB() {
-  try {
-      await client.connect();
-      console.log("Connected to MongoDB ✅");
-      const db = client.db("a4database");
-      userCollection = db.collection("users");
-      solveCollection = db.collection("solves");
-      //await solveCollection.deleteMany({}); //UNCOMMENTING THIS LINE WILL DELETE ALL SOLVES IN THE DB
-  }   
-  catch (err) {
-      console.error("MongoDB Connection Error:", err);
-  }
-}
-
-await connectDB();
+/* Moved Connection String to Lib/DatabaseConnectionUtils */
 
 async function getUserIDByEmail(email) {
   try {
@@ -43,9 +23,7 @@ async function getUserIDByEmail(email) {
 
 async function getUserByEmail(email) {
   try {
-    const user = await userCollection.findOne({ email });
-
-    return user;
+    return await userCollection.findOne({email});
 
   } catch (err) {
     console.error("Error fetching user:", err);
@@ -56,7 +34,7 @@ async function getUserByEmail(email) {
 export async function POST(req) {
   console.log("setting time and timestamp to below:");
   const { time, timestamp } = await req.json();
-  console.log(time); 
+  console.log(time);
   console.log(timestamp);
   console.log("setting time and timestamp to above");
 
@@ -70,9 +48,10 @@ export async function POST(req) {
     }
 
     const email = session.user.email;
-    var userID = await getUserIDByEmail(email);
+    let userID = await getUserIDByEmail(email);
+    /* with userID and sessions name find sessions row, use the $push to push this information into the array of objects in mongoDB */
     await solveCollection.insertOne({ userID, time, timestamp, status: "OK" });
-    return new Response(JSON.stringify({ success: true, message: "Solve addded successful" }), {
+    return new Response(JSON.stringify({ success: true, message: "Solve added successful" }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
@@ -97,24 +76,18 @@ export async function GET(req, res) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
     console.log("user authed in UPDATE");
-
-    connectDB();
-    console.log("CONNECTED");
-    const db = client.db("a4database");
-    console.log("DATABASE SET");
-    const solveCollection = db.collection("solves");
-
-    console.log("DB CONNECTED");
-    console.log("session.user.id:");
+    console.log("session.user.id: ", session.user.id);
     console.log(session.user.email);
-    var user = await getUserByEmail(session.user.email);
-    console.log(user);
+    let user = await getUserByEmail(session.user.email);
+
 
     const solves = await solveCollection.find(
       { userID: new ObjectId(user._id)},
       { projection: { userID: 0 } }
     ).toArray();
+
     console.log("solves found:");
     console.log(solves);
 
@@ -123,6 +96,7 @@ export async function GET(req, res) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+
     return new Response(JSON.stringify({ success: false, message: "DIFFERENTERROR" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
