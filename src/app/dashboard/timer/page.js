@@ -147,7 +147,7 @@ export default function Timer() {
         running = true;
         ready = false;
         updateTimerColor();
-        
+
         // Start recording if video mode is on
         startRecording();
     }
@@ -157,7 +157,7 @@ export default function Timer() {
         running = false;
         updateTimerColor();
         addTimeToDB(elapsedTime, Date.now());
-        
+
         // Stop recording if video mode is on
         stopRecording();
     }
@@ -258,7 +258,7 @@ export default function Timer() {
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
         setDropDown(prev => ({...prev, [id]: !prev[id]}));
-        
+
     }
 
     /**
@@ -266,14 +266,14 @@ export default function Timer() {
      * {MongoID, UserID, SessionName, timeData[]}
      * @returns {Promise<void>}
      */
-    async function createSession(sessionName){
+    async function createSession(sessionName, isThreeByThree){
         try{
             const response = await fetch('/api/sessions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({sessionName: sessionName}),
+                body: JSON.stringify({sessionName: sessionName, isThreeByThree: isThreeByThree}),
             })
             if(response.ok){
                 setNewSessionCreated(true)
@@ -307,7 +307,7 @@ export default function Timer() {
 
         return (
             <li key={solve._id}>
-                <button 
+                <button
                     className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
                         ${dropDown[solve._id] 
                             ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
@@ -317,21 +317,21 @@ export default function Timer() {
                     onClick={() => toggleDropDown(solve._id)}
                 >
                     <span>{time}</span>
-                    <svg 
+                    <svg
                         className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve._id] ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                     >
-                        <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
                             d="M19 9l-7 7-7-7"
                         />
                     </svg>
                 </button>
-                <div 
+                <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
                         ${dropDown[solve._id] ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
@@ -366,18 +366,18 @@ export default function Timer() {
     const toggleVideoMode = async () => {
         try {
             console.log("Toggle video mode clicked, current state:", videoMode);
-            
+
             if (!videoMode) {
                 console.log("Attempting to access camera...");
-                
+
                 // Check if browser supports getUserMedia
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error("Your browser doesn't support camera access");
                 }
-                
+
                 // First set videoMode to true so the video element renders
                 setVideoMode(true);
-                
+
                 // Wait a moment for the video element to be created in the DOM
                 setTimeout(async () => {
                     try {
@@ -385,12 +385,12 @@ export default function Timer() {
                             console.error("Video element still not available after delay");
                             throw new Error("Video element not available");
                         }
-                        
-                        const stream = await navigator.mediaDevices.getUserMedia({ 
+
+                        const stream = await navigator.mediaDevices.getUserMedia({
                             video: true,
                             audio: false
                         });
-                        
+
                         console.log("Camera access granted, setting up video preview");
                         videoRef.current.srcObject = stream;
                         setCameraPermission('granted');
@@ -401,10 +401,10 @@ export default function Timer() {
                         alert(`Camera error: ${innerErr.message}`);
                     }
                 }, 100); // Short delay to ensure DOM is updated
-                
+
             } else {
                 console.log("Turning off video mode, stopping camera");
-                
+
                 // Stop the camera when turning off video mode
                 if (videoRef.current && videoRef.current.srcObject) {
                     const tracks = videoRef.current.srcObject.getTracks();
@@ -430,17 +430,17 @@ export default function Timer() {
             recordedChunksRef.current = [];
             const stream = videoRef.current.srcObject;
             const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-            
+
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     recordedChunksRef.current.push(event.data);
                 }
             };
-            
+
             mediaRecorder.onstop = () => {
                 const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
-                
+
                 // Create download link for the recorded video
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -448,14 +448,14 @@ export default function Timer() {
                 a.download = `solve-${new Date().toISOString()}.webm`;
                 document.body.appendChild(a);
                 a.click();
-                
+
                 // Clean up
                 setTimeout(() => {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 }, 100);
             };
-            
+
             mediaRecorderRef.current = mediaRecorder;
             mediaRecorder.start();
         }
@@ -474,7 +474,7 @@ export default function Timer() {
         <section className="flex h-full">
             <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
-                    <select 
+                    <select
                         className="dropdown w-full text-xl h-12"
                         value={selectedSession}
                         onChange={(e) => setSelectedSession(e.target.value)}
@@ -487,7 +487,7 @@ export default function Timer() {
                             )
                         }
                     </select>
-                    <button 
+                    <button
                         className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"
                         title="Add Custom Session"
                         onClick={() => setOpenAddSession(true)}
@@ -503,33 +503,33 @@ export default function Timer() {
                         )
                     }
                 </div>
-                
+
                 <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
                 <ul className="space-y-2 text-2xl flex-grow overflow-y-auto">
                     {updateData.map(createTimeData)}
                 </ul>
-                
+
                 <div className="mt-auto pt-4 border-t border-text/10">
                     <div className="flex items-center justify-between">
                         <label className="text-lg font-medium cursor-pointer" onClick={toggleVideoMode}>
                             Video Mode {videoMode ? '(On)' : '(Off)'}
                         </label>
-                        <button 
+                        <button
                             onClick={toggleVideoMode}
                             className="relative inline-block w-12 h-6 transition duration-200 ease-in-out"
                             aria-pressed={videoMode}
                             role="switch"
                         >
-                            <span 
+                            <span
                                 className={`block w-full h-full rounded-full transition-colors duration-300 ease-in-out ${videoMode ? 'bg-accent' : 'bg-gray-400'}`}
                             >
-                                <span 
+                                <span
                                     className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${videoMode ? 'transform translate-x-6' : ''}`}
                                 ></span>
                             </span>
                         </button>
                     </div>
-                    
+
                     {/* Status message for better feedback */}
                     <div className="text-sm mt-1">
                         {videoMode && cameraPermission === 'granted' && <p className="text-green-500">Camera active</p>}
@@ -540,53 +540,53 @@ export default function Timer() {
                             </p>
                         )}
                     </div>
-                    
+
                     {/* Video preview with expand/collapse button */}
                     {videoMode && (
                         <div className="mt-2 relative">
-                            <video 
-                                ref={videoRef} 
+                            <video
+                                ref={videoRef}
                                 className={`w-full bg-black rounded-lg object-cover transition-all duration-300 ${
                                     expandedPreview ? 'h-64' : 'h-32'
                                 }`}
-                                autoPlay 
+                                autoPlay
                                 playsInline
                                 muted
                             />
                             <div className="absolute bottom-2 right-2 flex gap-2">
                                 {/* Expand/collapse button */}
-                                <button 
+                                <button
                                     onClick={() => setExpandedPreview(!expandedPreview)}
                                     className="bg-black/50 text-white p-1 rounded hover:bg-black/70 transition-colors"
                                     title={expandedPreview ? "Collapse preview" : "Expand preview"}
                                 >
-                                    <svg 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        className="h-4 w-4" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
                                         stroke="currentColor"
                                     >
                                         {expandedPreview ? (
                                             // Collapse icon
-                                            <path 
-                                                strokeLinecap="round" 
-                                                strokeLinejoin="round" 
-                                                strokeWidth={2} 
-                                                d="M5 15l7-7 7 7" 
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M5 15l7-7 7 7"
                                             />
                                         ) : (
                                             // Expand icon
-                                            <path 
-                                                strokeLinecap="round" 
-                                                strokeLinejoin="round" 
-                                                strokeWidth={2} 
-                                                d="M19 9l-7 7-7-7" 
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M19 9l-7 7-7-7"
                                             />
                                         )}
                                     </svg>
                                 </button>
-                                
+
                                 {/* Camera preview label */}
                                 <div className="text-xs bg-black/50 text-white px-2 py-1 rounded">
                                     Camera Preview

@@ -4,6 +4,7 @@ import {useState} from "react";
 
 export default function Modal(props) {
     const [input, setInput] = useState("");
+    const [isThreeByThree, setIsThreeByThree] = useState(false);
     const closeOnWindowClick = (e) => {
         if (e.target === e.currentTarget) {
             props.close()
@@ -12,7 +13,7 @@ export default function Modal(props) {
 
     const submitSession = () => {
         if (input.trim() !== "") {
-            props.createSession(input);
+            props.createSession(input, isThreeByThree);
             props.close()
         }
     }
@@ -45,7 +46,11 @@ export default function Modal(props) {
                             />
                         </label>
                     </div>
-
+                    <div>
+                        <label className="block text-lg mb-2">
+                            <input type="checkbox" onChange={(e) => setIsThreeByThree(e.target.checked)}/> 3x3 Cube Session?
+                        </label>
+                    </div>
                     <div className="flex justify-center">
                         <button className="button p-2 text-lg w-full sm:w-auto" onClick={submitSession}>
                             Create Session

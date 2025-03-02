@@ -50,7 +50,7 @@ export async function GET(req) {
 
 
 export async function POST(req) {
-    const {sessionName} = await req.json()
+    const {sessionName, isThreeByThree} = await req.json()
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
@@ -65,7 +65,7 @@ export async function POST(req) {
         if(!findSession) {
             console.log("Session Does not exist, continue with creation")
             const createSession = await sessionCollection.insertOne(
-                {userID:session.user.id, sessionName:sessionName, timerData: []}
+                {userID:session.user.id, sessionName:sessionName, isThreeByThree:isThreeByThree, timerData: []}
             )
             return new Response(JSON.stringify({ createSession: createSession.acknowledged }), {
                 status: 200,
