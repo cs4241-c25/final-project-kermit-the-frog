@@ -2,6 +2,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import Modal from "@/app/dashboard/timer/Modal";
 
 export default function Timer() {
     let startTime = 0;
@@ -32,6 +33,8 @@ export default function Timer() {
     /* Current Session Object to allow direct access to the array*/
     const [currentSession, setCurrentSession] = useState(null);
     const [selectedSession, setSelectedSession] = useState("3x3");
+    const [openAddSession, setOpenAddSession] = useState(false);
+    const [newSessionCreated, setNewSessionCreated] = useState(false);
 
     /* Video-related state and refs */
     const [videoMode, setVideoMode] = useState(false);
@@ -39,6 +42,7 @@ export default function Timer() {
     const videoRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const recordedChunksRef = useRef([]);
+
 
     /* State Handling Key Presses & Timer */
     /*
@@ -271,6 +275,10 @@ export default function Timer() {
                 },
                 body: JSON.stringify({sessionName: sessionName}),
             })
+            if(response.ok){
+                setNewSessionCreated(true)
+                setSelectedSession(sessionName)
+            }
         } catch (error) {
             console.error(' createSession Error:', error);
         }
@@ -460,6 +468,8 @@ export default function Timer() {
         }
     };
 
+
+
     return (
         <section className="flex h-full">
             <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
@@ -471,13 +481,27 @@ export default function Timer() {
                     >
                         <option value="3x3">3x3</option>
                         <option value="5x5">5x5</option>
+                        {
+                            newSessionCreated && (
+                                <option value={selectedSession}> {selectedSession} </option>
+                            )
+                        }
                     </select>
                     <button 
-                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"  
+                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"
                         title="Add Custom Session"
+                        onClick={() => setOpenAddSession(true)}
                     >
                         +
                     </button>
+                    {
+                        openAddSession && (
+                            <Modal showModal={openAddSession}
+                                   close={() => setOpenAddSession(false)}
+                                   createSession = {createSession}
+                            />
+                        )
+                    }
                 </div>
                 
                 <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
