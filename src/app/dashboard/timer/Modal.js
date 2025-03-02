@@ -19,30 +19,40 @@ export default function Modal(props) {
 
 
     return (
-        <div className={`${props.showModal ? 'visible' : 'hidden'}  fixed inset-0 bg-background/80 pt-16`}
-             onClick={closeOnWindowClick}>
-            <div className={` bg-primary/65 shadow-xl m-5 p-5 border border-transparent w-1/5 mx-auto rounded-lg`}
-                 onClick={(e) => e.stopPropagation()}>
-                <span className="close cursor-pointer m-2" id="closeModal" onClick={props.close}>
-                    <button className="button text-xl p-0 m-0  lg:aspect-square lg:size-12 ">
+        <div
+            className={`${props.showModal ? 'visible' : 'hidden'} fixed inset-0 bg-background/80 flex items-center justify-center p-4`}
+            onClick={closeOnWindowClick}
+        >
+            <div
+                className="bg-primary/65 shadow-xl p-5 border border-transparent rounded-lg max-w-lg w-full sm:w-3/4 md:w-1/2 lg:w-1/3"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <span className="close cursor-pointer " onClick={props.close}>
+                    <button className="button text-xl p-2 lg:aspect-square lg:size-12">
                         X
                     </button>
                 </span>
-                <div className="items-center justify-center text-center p-4 m-4">
-                    <div className=" m-4">
-                        <label className='text-xl'> New Session Name:
-                            <input type="text" className="rounded-xl p-2 bg-background/40 border border-background/40"
-                                   onChange={(e) => setInput(e.target.value)}
-                                   required/>
+
+                <div className="items-center justify-center text-center p-4">
+                    <div className="mb-4">
+                        <label className="block text-lg mb-2">
+                            New Session Name:
+                            <input
+                                type="text"
+                                className="rounded-xl p-2 w-full bg-background/40 border border-background/40 mt-2"
+                                onChange={(e) => setInput(e.target.value)}
+                                required
+                            />
                         </label>
                     </div>
-                    <div className="flex items-center justify-center ">
-                        <button className="button p-2 text-xl" onClick={submitSession}>
+
+                    <div className="flex justify-center">
+                        <button className="button p-2 text-lg w-full sm:w-auto" onClick={submitSession}>
                             Create Session
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
