@@ -15,7 +15,8 @@ export default function RootLayout({ children }) {
     pathname === '/auth/login' ? 'login' :
     pathname === '/auth/register' ? 'register' :
     pathname === '/dashboard/timer' ? 'timer' :
-    pathname === '/dashboard/data' ? 'data' : 
+    pathname === '/dashboard/data' ? 'data' :
+    pathname === '/dataVis' ? 'dataVis' :
     'home';
 
   return (

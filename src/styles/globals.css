@@ -9,7 +9,6 @@
   --primary: 130 177 255;
   --secondary: 239 83 80;
   --accent: 255 235 59;
-
 }
 
 /* Dark theme */
@@ -28,6 +27,31 @@
   --primary: 34 197 94;
   --secondary: 224 82 42;
   --accent: 251 191 36;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--background));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--primary) / 0.4);
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--primary) / 0.6);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--primary) / 0.4) rgb(var(--background));
 }
 
 @layer components {
@@ -49,5 +73,5 @@
 
   .dropdown {
     @apply bg-background/80 appearance-none focus:outline-none focus:border-none p-2 rounded-md cursor-pointer transition-colors duration-300 text-text;
-}
+  }
 }

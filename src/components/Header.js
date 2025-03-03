@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function Header({ variant = 'home' }) {
-  const { theme, setTheme, themes } = useTheme();
+  const { theme, setTheme, themes, isSystemTheme, setIsSystemTheme } = useTheme();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -39,6 +39,12 @@ export default function Header({ variant = 'home' }) {
         { action: handleSignOut, text: "Sign Out" }
       ]
     },
+    dataVis: {
+      links: [
+        { href: "/dashboard/timer", text: "Back to Timer" },
+        { action: handleSignOut, text: "Sign Out" }
+      ]
+    },
     home: {
       link: "/auth/login",
       text: "Log In"
@@ -55,7 +61,7 @@ export default function Header({ variant = 'home' }) {
     "after:w-full",               // Full width
     "after:origin-bottom-right",  // Transform origin for animation
     "after:scale-x-0",           // Initially scaled to 0
-    "after:bg-text",             // Use text color for underline
+    "after:bg-accent",             // Use text color for underline
     "after:transition-transform", // Enable transform transitions
     "after:duration-300",        // Animation duration
     "hover:after:origin-bottom-left", // Change origin on hover
@@ -100,6 +106,15 @@ export default function Header({ variant = 'home' }) {
     );
   };
 
+  const handleThemeChange = (e) => {
+    const value = e.target.value;
+    if (value === 'system') {
+      setIsSystemTheme(true);
+    } else {
+      setTheme(value);
+    }
+  };
+
   return (
     <nav className="bg-primary/60 min-h-20 shadow-xl p-2 lg:py-4 lg:px-8 w-full flex justify-between items-center text-text text-2xl font-semibold lg:text-2xl">
         <Link href="/" className="flex items-center gap-4 font-bold text-text">
@@ -112,14 +127,14 @@ export default function Header({ variant = 'home' }) {
         </div>
 
         <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
+            value={isSystemTheme ? 'system' : theme}
+            onChange={handleThemeChange}
             className="hidden md:block dropdown"
         >
             {Object.entries(themes).map(([value, label]) => (
-            <option key={value} value={value}>
+              <option key={value} value={value}>
                 {label} Theme
-            </option>
+              </option>
             ))}
         </select>
     </nav>
