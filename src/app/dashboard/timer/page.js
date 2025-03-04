@@ -35,6 +35,7 @@ export default function Timer() {
     const [selectedSession, setSelectedSession] = useState("3x3");
     const [openAddSession, setOpenAddSession] = useState(false);
     const [newSessionCreated, setNewSessionCreated] = useState(false);
+    const [allSessions, setAllSessions] = useState(["3x3", "5x5"]);
 
     /* Video-related state and refs */
     const [videoMode, setVideoMode] = useState(false);
@@ -77,18 +78,33 @@ export default function Timer() {
     useEffect(() => {
         const fetchData = async () => {
             await updateTable()
+            await getAllSessions()
         }
         fetchData();
     }, []);
 
     useEffect(() => {
-        if(currentSession !== null && selectedSession !== null)  {setCurrentSession(getSession( selectedSession));}
+        if(currentSession !== null && selectedSession !== null) {
+            setCurrentSession(getSession(selectedSession));
+        }
     },[selectedSession]);
 
     /* Runs once when the page loads to set the default Session */
     useEffect(() => {
         setCurrentSession(getSession('3x3'));
     },[])
+
+    /*
+    * If a new session was created and updated the selected Session (response.ok), add the new session to the list of
+    * options if it doesn't already exist (a saftey check if it gets past db check)
+    */
+    useEffect(() => {
+        if(newSessionCreated && selectedSession) {
+            setAllSessions((prev) =>
+                prev.includes(selectedSession) ? prev : [...prev, selectedSession])
+        }
+        setNewSessionCreated(false)
+    }, [newSessionCreated, selectedSession]);
 
 
     function updateTimerColor() {
@@ -180,9 +196,7 @@ export default function Timer() {
         runningTimeout = false;
     }
 
-    /*
-        Need to change how data is added to Database with the newly created Session
-     */
+    /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp) {
         try {
             const data = {time: time, timestamp: timestamp};
@@ -255,6 +269,7 @@ export default function Timer() {
             alert("Error: Unauthorized, please restart your browser");
         }
     }
+
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
         setDropDown(prev => ({...prev, [id]: !prev[id]}));
@@ -283,7 +298,7 @@ export default function Timer() {
             console.error(' createSession Error:', error);
         }
     }
-
+    /* Gets one User sessions */
     async function getSession(sessionName){
         try{
             const response = await fetch(`/api/sessions?sessionName=${sessionName}`, {
@@ -291,6 +306,21 @@ export default function Timer() {
             })
             if(response.ok) {
                 return response.json();
+            }
+        } catch (error) {
+            console.error('Error fetching user sessions: ', error);
+        }
+    }
+    /* Gets All Existing User sessions */
+    async function getAllSessions() {
+        try{
+            const response = await fetch(`/api/sessions?getAllSessions=true`, {
+                method: 'GET'
+            })
+            if(response.ok) {
+                const result = await response.json();
+                const parseSessions = result.session.map(session => session.sessionName)
+                setAllSessions(parseSessions)
             }
         } catch (error) {
             console.error('Error fetching user sessions: ', error);
@@ -469,7 +499,6 @@ export default function Timer() {
     };
 
 
-
     return (
         <section className="flex h-full">
             <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
@@ -479,12 +508,12 @@ export default function Timer() {
                         value={selectedSession}
                         onChange={(e) => setSelectedSession(e.target.value)}
                     >
-                        <option value="3x3">3x3</option>
-                        <option value="5x5">5x5</option>
                         {
-                            newSessionCreated && (
-                                <option value={selectedSession}> {selectedSession} </option>
-                            )
+                            allSessions.map((session, index) => (
+                                <option key={index} value={session}>
+                                    {session}
+                                </option>
+                            ))
                         }
                     </select>
                     <button
