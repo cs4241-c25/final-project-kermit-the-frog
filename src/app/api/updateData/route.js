@@ -1,8 +1,7 @@
 import {ObjectId} from "mongodb";
 import {getServerSession} from "next-auth"
-import {solveCollection, userCollection, sessionCollection} from "@/lib/db";
+import {solveCollection, userCollection} from "@/lib/db";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
-import { v4 as uuidv4 } from 'uuid';
 
 console.log("data route running");
 
@@ -33,57 +32,8 @@ async function getUserByEmail(email) {
 }
 
 export async function POST(req) {
-  const { time, timestamp, sessionName } = await req.json();
-
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return new Response(JSON.stringify({ error: "User not authenticated" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const email = session.user.email;
-    let userID = await getUserIDByEmail(email);
-    /* with userID and sessions name find sessions row, use the $push to push this information into the array of objects in mongoDB */
-
-    userID = userID.toString();
-    const solveID = uuidv4().replace(/-/g, '');
-
-
-    console.log("Looking for something with userID: ", userID);
-    console.log("Looking for something with sessionName: ", sessionName);
-    
-    await sessionCollection.updateOne(
-      { userID: userID, sessionName: sessionName }, // Find document with matching userID and sessionname
-      { 
-          $push: { 
-              timerData: { 
-                  solveID,
-                  time,
-                  timestamp,
-                  status: "OK",
-                  scramble: "R U R' U'" 
-              } 
-          }
-      }
-  );
-
-    return new Response(JSON.stringify({ success: true, message: "Solve added successful" }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ success: false, message: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-}
-
-export async function GET(req, res) {
-  try {
+    console.log(req);
     console.log("UPDATE AUTH CALLED");
     const session = await getServerSession(authOptions);
     console.log("SESSION GRABBED");
@@ -97,11 +47,21 @@ export async function GET(req, res) {
     }
 
     console.log("user authed in UPDATE");
-    console.log("session.user.id: ", session.user.id);
     console.log(session.user.email);
     let user = await getUserByEmail(session.user.email);
+    console.log("user ID=");
+    console.log(user._id);
+    console.log("sessionName=");
+    console.log(req.sessionName);
 
+    const userSession = await db.collection("sessions").findOne({
+      userID: new ObjectId(user._id),
+      sessionName: req.sessionName 
+    });
 
+    console.log("session found:");
+    console.log(userSession);
+    
     const solves = await solveCollection.find(
       { userID: new ObjectId(user._id)},
       { projection: { userID: 0 } }

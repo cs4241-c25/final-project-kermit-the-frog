@@ -17,13 +17,13 @@ export async function POST(req) {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
-    }
+    }             
 
-    console.log("going to delete solve:");
+    console.log("going to update solve:");
     console.log(id);
 
-    const result = await solveCollection.updateOne(
-      { _id: new ObjectId(id) },
+    const result = await sessionCollection.updateOne(
+      { solveID: id},                                                                          
       { $set: { status: status } }
     );
 

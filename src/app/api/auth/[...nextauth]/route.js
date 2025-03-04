@@ -64,8 +64,8 @@ export const authOptions = {
                 console.log("Error adding userID to sessions")
               }
           }
-          if(user) {
-              token.id = user.id
+          else {
+            token.id = token.sub;
           }
 
           return token

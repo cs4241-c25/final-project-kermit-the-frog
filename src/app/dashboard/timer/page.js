@@ -32,6 +32,7 @@ export default function Timer() {
     const [timerColor, setTimerColor] = useState("text-text"); //state to track color during presses
 
     /* Current Session Object to allow direct access to the array*/
+    const [sessionUpdater, setSessionUpdater] = useState(0);
     const [currentSession, setCurrentSession] = useState(null);
     const [selectedSession, setSelectedSession] = useState("3x3");
     const [openAddSession, setOpenAddSession] = useState(false);
@@ -44,12 +45,17 @@ export default function Timer() {
     // State for tracking expanded/collapsed state
     const [expandedPreview, setExpandedPreview] = useState(false);
 
+    const valueRef = useRef("3x3");
+
+    useEffect(() => {
+        valueRef.current = selectedSession;
+    }, [selectedSession]);
+
     useEffect(() => {
         if (session.status === "authenticated") {
             router.push('/dashboard/timer');
         }
     }, [session.status, router]);
-
 
     useEffect(() => {
         document.addEventListener("keydown", keyDownHandler);
@@ -63,22 +69,38 @@ export default function Timer() {
 
     useEffect(() => {
         const fetchData = async () => {
-            await updateTable()
+            //await updateTable()
             await getAllSessions()
         }
         fetchData();
     }, []);
 
     useEffect(() => {
-        if(currentSession !== null && selectedSession !== null) {
+        if(selectedSession !== null) {
             setCurrentSession(getSession(selectedSession));
         }
-    },[selectedSession]);
+    },[selectedSession, sessionUpdater]);
 
     /* Runs once when the page loads to set the default Session */
     useEffect(() => {
         setCurrentSession(getSession('3x3'));
     },[])
+
+    useEffect(() => {
+        updateTable();
+        console.log("Selected Session Has Changed TO:", selectedSession);
+    }, [selectedSession]);
+
+    useEffect(() => {
+        if (currentSession !== null) {
+            Promise.resolve(currentSession).then(resolvedSession => {
+                if (resolvedSession.session?.timerData?.length > 0) {
+                    resolvedSession.session.timerData.sort((a, b) => b.timestamp - a.timestamp);
+                    setUpdateData(resolvedSession.session.timerData);
+                }
+            }).catch(error => console.error("Error resolving session:", error));
+        }
+    }, [currentSession]);
 
     /*
     * If a new session was created and updated the selected Session (response.ok), add the new session to the list of
@@ -92,6 +114,14 @@ export default function Timer() {
         setNewSessionCreated(false)
     }, [newSessionCreated, selectedSession]);
 
+
+    const updateTable = () => {
+        if (valueRef) {
+            getSession(valueRef.current).then((sessionData) => {
+                setCurrentSession(sessionData);
+            });
+        }
+    };
 
     function updateTimerColor() {
         if (running) {
@@ -159,11 +189,12 @@ export default function Timer() {
         setIsRecording(true);
     }
 
-    function stopTimer() {
+    async function stopTimer() {
         clearInterval(timerInterval);
         running = false;
         updateTimerColor();
-        addTimeToDB(elapsedTime, Date.now());
+        await addTimeToDB(elapsedTime, Date.now());
+        updateTable();
 
         // Stop recording
         setIsRecording(false);
@@ -195,7 +226,7 @@ export default function Timer() {
     /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp) {
         try {
-            const data = {time: time, timestamp: timestamp};
+            const data = {time: time, timestamp: timestamp, sessionName: valueRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
                 headers: {
@@ -204,21 +235,21 @@ export default function Timer() {
                 body: JSON.stringify(data),
             })
             await response.json()
-            await updateTable()
+            //await updateTable()
         } catch (err) {
             console.error(' addTimeToDB Error:', error);
             alert("Error: Unauthorized, please restart your browser");
         }
     }
 
-    async function handleDelete(id) {
+    async function handleDelete(id, sessionName) {
         try {
             const response = await fetch('/api/delete', {
                 method: 'DELETE', //change to DELETE
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({id}),
+                body: JSON.stringify({id, sessionName}),
             })
             await response.json;
             //use Remove the data from data List, will rerender w/o the given id element
@@ -228,25 +259,25 @@ export default function Timer() {
         }
     }
 
-    async function handleStatusChange(id, status) {
+    async function handleStatusChange(id, status, sessionName) {
         try {
             const response = await fetch('/api/updateSolve', {
                 method: 'POST', //can be changes to GET
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({id, status}),
+                body: JSON.stringify({id, status, sessionName}),
             })
             await response.json;
             //use state to change the status by making sure state is updated before the call
             setUpdateData(prev => prev.filter(solve => solve._id !== id));
-            await updateTable();
+            //await updateTable();
         } catch (error) {
             console.error('Status Change Error:', error);
         }
     }
 
-    /* Use GET function in Data, update is redundant */
+    /* Use GET function in Data, update is redundant 
     async function updateTable() {
         try {
             const response = await fetch('/api/data', {
@@ -264,7 +295,7 @@ export default function Timer() {
             console.error('UpdateTable Error:', error);
             alert("Error: Unauthorized, please restart your browser");
         }
-    }
+    }*/
 
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
@@ -332,19 +363,19 @@ export default function Timer() {
         else if (solve.status === '+2') time = `${(Number(time) + 2).toFixed(3)}+`
 
         return (
-            <li key={solve._id}>
+            <li key={solve.solveID}>
                 <button
                     className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
-                        ${dropDown[solve._id] 
+                        ${dropDown[solve.solveID] 
                             ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
                             : 'rounded-2xl hover:bg-accent/10'
                         } 
                         flex items-center justify-center gap-2 transition-all duration-200`}
-                    onClick={() => toggleDropDown(solve._id)}
+                    onClick={() => toggleDropDown(solve.solveID)}
                 >
                     <span>{time}</span>
                     <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve._id] ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -359,26 +390,26 @@ export default function Timer() {
                 </button>
                 <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
-                        ${dropDown[solve._id] ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
+                        ${dropDown[solve.solveID] ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
                     <div className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve._id, "OK").then(() => toggleDropDown(solve._id))}
+                            onClick={() => handleStatusChange(solve.solveID, "OK", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
                             OK
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve._id, "+2")}
+                            onClick={() => handleStatusChange(solve.solveID, "+2", valueRef.current)}
                         >
                             +2
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve._id, "DNF")}
+                            onClick={() => handleStatusChange(solve.solveID, "DNF", valueRef.current)}
                         >
                             DNF
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1 rounded-b-2xl text-red-400"
-                            onClick={() => handleDelete(solve._id)}
+                            onClick={() => handleDelete(solve.solveID, valueRef.current)}
                         >
                             Delete
                         </button>
@@ -399,8 +430,8 @@ export default function Timer() {
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
                     <select
                         className="dropdown w-full text-xl h-12"
-                        value={selectedSession}
-                        onChange={(e) => setSelectedSession(e.target.value)}
+                        value={valueRef.current}
+                        onChange={(e) => {setSelectedSession(e.target.value)}}
                     >
                         {
                             allSessions.map((session, index) => (
@@ -429,7 +460,7 @@ export default function Timer() {
 
                 <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
                 <ul className="space-y-2 text-2xl flex-grow overflow-y-auto">
-                    {updateData.map(createTimeData)}
+                    {(updateData !== null) ? updateData.map(createTimeData) : <li className="text-center">No times yet</li>}
                 </ul>
                 
                 {/* Video recording component */}
