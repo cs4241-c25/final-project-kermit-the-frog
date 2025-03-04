@@ -2,6 +2,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import VideoRecorder from '../../../components/VideoRecorder';
 import Modal from "@/app/dashboard/timer/Modal";
 
 export default function Timer() {
@@ -37,23 +38,8 @@ export default function Timer() {
     const [newSessionCreated, setNewSessionCreated] = useState(false);
     const [allSessions, setAllSessions] = useState(["3x3", "5x5"]);
 
-    /* Video-related state and refs */
-    const [videoMode, setVideoMode] = useState(false);
-    const [cameraPermission, setCameraPermission] = useState(null);
-    const videoRef = useRef(null);
-    const mediaRecorderRef = useRef(null);
-    const recordedChunksRef = useRef([]);
-
-
-    /* State Handling Key Presses & Timer */
-    /*
-    const [currentTime, setCurrentTime] = useState(0); //Update for timer start
-    const [pressedSpace, setPressedSpace] = useState(false); //While space bar is pressed, set state
-    const [readyTimer, setReadyTimer] = useState(false); // while primed, set to ready
-    const [runningTimer, setRunningTimer] = useState(false); // set state while running timer
-    const [displayedTime, setDisplayedTime] = useState("0.000");
-    const [timerStartTime, setTimerStartTime] = useState(0);
-    */
+    // Video recording state
+    const [isRecording, setIsRecording] = useState(false);
 
     // State for tracking expanded/collapsed state
     const [expandedPreview, setExpandedPreview] = useState(false);
@@ -112,6 +98,11 @@ export default function Timer() {
             setTimerColor("text-text");
         } else if (ready) {
             setTimerColor("text-green-500");
+
+            // Start recording when timer turns green (ready state)
+            if (ready && !isRecording) {
+                setIsRecording(true);
+            }
         } else if (pressed) {
             setTimerColor("text-red-500");
         } else {
@@ -165,7 +156,7 @@ export default function Timer() {
         updateTimerColor();
 
         // Start recording if video mode is on
-        startRecording();
+        setIsRecording(true);
     }
 
     function stopTimer() {
@@ -174,8 +165,8 @@ export default function Timer() {
         updateTimerColor();
         addTimeToDB(elapsedTime, Date.now());
 
-        // Stop recording if video mode is on
-        stopRecording();
+        // Stop recording
+        setIsRecording(false);
     }
 
     function startTimeoutTimer() {
@@ -194,6 +185,11 @@ export default function Timer() {
     function stopTimeoutTimer() {
         clearInterval(timerTimeoutInterval);
         runningTimeout = false;
+
+        // Make sure to stop any recording that might have started
+        if (!running && isRecording) {
+            setIsRecording(false);
+        }
     }
 
     /* Need to change how data is added to Database with the newly created Session */
@@ -392,112 +388,10 @@ export default function Timer() {
         )
     }
 
-    // First, let's modify the toggleVideoMode function to be more robust
-    const toggleVideoMode = async () => {
-        try {
-            console.log("Toggle video mode clicked, current state:", videoMode);
-
-            if (!videoMode) {
-                console.log("Attempting to access camera...");
-
-                // Check if browser supports getUserMedia
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error("Your browser doesn't support camera access");
-                }
-
-                // First set videoMode to true so the video element renders
-                setVideoMode(true);
-
-                // Wait a moment for the video element to be created in the DOM
-                setTimeout(async () => {
-                    try {
-                        if (!videoRef.current) {
-                            console.error("Video element still not available after delay");
-                            throw new Error("Video element not available");
-                        }
-
-                        const stream = await navigator.mediaDevices.getUserMedia({
-                            video: true,
-                            audio: false
-                        });
-
-                        console.log("Camera access granted, setting up video preview");
-                        videoRef.current.srcObject = stream;
-                        setCameraPermission('granted');
-                    } catch (innerErr) {
-                        console.error("Error accessing camera after delay:", innerErr);
-                        setCameraPermission('denied');
-                        setVideoMode(false);
-                        alert(`Camera error: ${innerErr.message}`);
-                    }
-                }, 100); // Short delay to ensure DOM is updated
-
-            } else {
-                console.log("Turning off video mode, stopping camera");
-
-                // Stop the camera when turning off video mode
-                if (videoRef.current && videoRef.current.srcObject) {
-                    const tracks = videoRef.current.srcObject.getTracks();
-                    tracks.forEach(track => {
-                        console.log("Stopping track:", track.kind);
-                        track.stop();
-                    });
-                    videoRef.current.srcObject = null;
-                }
-                setVideoMode(false);
-            }
-        } catch (err) {
-            console.error("Error in toggleVideoMode:", err);
-            setCameraPermission('denied');
-            alert(`Camera error: ${err.message || "Could not access camera. Please check your browser permissions."}`);
-            setVideoMode(false);
-        }
+    // Handler for when recording completes
+    const handleRecordingComplete = (blob) => {
+        console.log("Recording completed, video size:", blob.size);
     };
-
-    // Start recording when timer starts
-    const startRecording = () => {
-        if (videoMode && videoRef.current && videoRef.current.srcObject) {
-            recordedChunksRef.current = [];
-            const stream = videoRef.current.srcObject;
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunksRef.current.push(event.data);
-                }
-            };
-
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-
-                // Create download link for the recorded video
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `solve-${new Date().toISOString()}.webm`;
-                document.body.appendChild(a);
-                a.click();
-
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-            };
-
-            mediaRecorderRef.current = mediaRecorder;
-            mediaRecorder.start();
-        }
-    };
-
-    // Stop recording when timer stops
-    const stopRecording = () => {
-        if (videoMode && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            mediaRecorderRef.current.stop();
-        }
-    };
-
 
     return (
         <section className="flex h-full">
@@ -537,93 +431,12 @@ export default function Timer() {
                 <ul className="space-y-2 text-2xl flex-grow overflow-y-auto">
                     {updateData.map(createTimeData)}
                 </ul>
-
-                <div className="mt-auto pt-4 border-t border-text/10">
-                    <div className="flex items-center justify-between">
-                        <label className="text-lg font-medium cursor-pointer" onClick={toggleVideoMode}>
-                            Video Mode {videoMode ? '(On)' : '(Off)'}
-                        </label>
-                        <button
-                            onClick={toggleVideoMode}
-                            className="relative inline-block w-12 h-6 transition duration-200 ease-in-out"
-                            aria-pressed={videoMode}
-                            role="switch"
-                        >
-                            <span
-                                className={`block w-full h-full rounded-full transition-colors duration-300 ease-in-out ${videoMode ? 'bg-accent' : 'bg-gray-400'}`}
-                            >
-                                <span
-                                    className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${videoMode ? 'transform translate-x-6' : ''}`}
-                                ></span>
-                            </span>
-                        </button>
-                    </div>
-
-                    {/* Status message for better feedback */}
-                    <div className="text-sm mt-1">
-                        {videoMode && cameraPermission === 'granted' && <p className="text-green-500">Camera active</p>}
-                        {videoMode && !cameraPermission && <p className="text-yellow-500">Initializing camera...</p>}
-                        {cameraPermission === 'denied' && (
-                            <p className="text-red-500">
-                                Camera access denied. Please enable camera permissions.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Video preview with expand/collapse button */}
-                    {videoMode && (
-                        <div className="mt-2 relative">
-                            <video
-                                ref={videoRef}
-                                className={`w-full bg-black rounded-lg object-cover transition-all duration-300 ${
-                                    expandedPreview ? 'h-64' : 'h-32'
-                                }`}
-                                autoPlay
-                                playsInline
-                                muted
-                            />
-                            <div className="absolute bottom-2 right-2 flex gap-2">
-                                {/* Expand/collapse button */}
-                                <button
-                                    onClick={() => setExpandedPreview(!expandedPreview)}
-                                    className="bg-black/50 text-white p-1 rounded hover:bg-black/70 transition-colors"
-                                    title={expandedPreview ? "Collapse preview" : "Expand preview"}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        {expandedPreview ? (
-                                            // Collapse icon
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M5 15l7-7 7 7"
-                                            />
-                                        ) : (
-                                            // Expand icon
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        )}
-                                    </svg>
-                                </button>
-
-                                {/* Camera preview label */}
-                                <div className="text-xs bg-black/50 text-white px-2 py-1 rounded">
-                                    Camera Preview
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                
+                {/* Video recording component */}
+                <VideoRecorder
+                    isRecording={isRecording}
+                    onRecordingComplete={handleRecordingComplete}
+                />
             </aside>
 
             <main className="flex items-center justify-center w-9/12">
