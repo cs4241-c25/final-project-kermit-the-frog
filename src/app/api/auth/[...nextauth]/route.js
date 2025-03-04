@@ -52,7 +52,7 @@ export const authOptions = {
   },
   callbacks: {
     //When the signIn function is used with any auth routes, it calls a function to check if registered
-      async jwt({ token, account, profile }) {
+      async jwt({ token, account, profile, user }) {
 
           if (account && profile) {
               token.email = profile.email;
@@ -64,6 +64,10 @@ export const authOptions = {
                 console.log("Error adding userID to sessions")
               }
           }
+          if(user) {
+              token.id = user.id
+          }
+
           return token
       },
       async session({ session,token }) {
