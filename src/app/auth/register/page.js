@@ -46,7 +46,7 @@ export default function Register() {
         const data = await res.json();
         if (data.success) {
             console.log('Registration successful');
-            window.location.href = '/login?signupSuccess=true';
+            window.location.href = '/auth/login?signupSuccess=true';
         } else {
             setLoginError("Registration Failed, Username Already Exists");
             console.log(data.message);
