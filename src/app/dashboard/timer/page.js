@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import VideoRecorder from '../../../components/VideoRecorder';
+import Modal from "@/app/dashboard/timer/Modal";
 
 export default function Timer() {
     let startTime = 0;
@@ -33,6 +34,9 @@ export default function Timer() {
     /* Current Session Object to allow direct access to the array*/
     const [currentSession, setCurrentSession] = useState(null);
     const [selectedSession, setSelectedSession] = useState("3x3");
+    const [openAddSession, setOpenAddSession] = useState(false);
+    const [newSessionCreated, setNewSessionCreated] = useState(false);
+    const [allSessions, setAllSessions] = useState(["3x3", "5x5"]);
 
     // Video recording state
     const [isRecording, setIsRecording] = useState(false);
@@ -60,12 +64,15 @@ export default function Timer() {
     useEffect(() => {
         const fetchData = async () => {
             await updateTable()
+            await getAllSessions()
         }
         fetchData();
     }, []);
 
     useEffect(() => {
-        if(currentSession !== null && selectedSession !== null)  {setCurrentSession(getSession( selectedSession));}
+        if(currentSession !== null && selectedSession !== null) {
+            setCurrentSession(getSession(selectedSession));
+        }
     },[selectedSession]);
 
     /* Runs once when the page loads to set the default Session */
@@ -73,13 +80,25 @@ export default function Timer() {
         setCurrentSession(getSession('3x3'));
     },[])
 
+    /*
+    * If a new session was created and updated the selected Session (response.ok), add the new session to the list of
+    * options if it doesn't already exist (a saftey check if it gets past db check)
+    */
+    useEffect(() => {
+        if(newSessionCreated && selectedSession) {
+            setAllSessions((prev) =>
+                prev.includes(selectedSession) ? prev : [...prev, selectedSession])
+        }
+        setNewSessionCreated(false)
+    }, [newSessionCreated, selectedSession]);
+
 
     function updateTimerColor() {
         if (running) {
             setTimerColor("text-text");
         } else if (ready) {
             setTimerColor("text-green-500");
-            
+
             // Start recording when timer turns green (ready state)
             if (ready && !isRecording) {
                 setIsRecording(true);
@@ -135,7 +154,7 @@ export default function Timer() {
         running = true;
         ready = false;
         updateTimerColor();
-        
+
         // Start recording if video mode is on
         setIsRecording(true);
     }
@@ -145,7 +164,7 @@ export default function Timer() {
         running = false;
         updateTimerColor();
         addTimeToDB(elapsedTime, Date.now());
-        
+
         // Stop recording
         setIsRecording(false);
     }
@@ -166,16 +185,14 @@ export default function Timer() {
     function stopTimeoutTimer() {
         clearInterval(timerTimeoutInterval);
         runningTimeout = false;
-        
+
         // Make sure to stop any recording that might have started
         if (!running && isRecording) {
             setIsRecording(false);
         }
     }
 
-    /*
-        Need to change how data is added to Database with the newly created Session
-     */
+    /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp) {
         try {
             const data = {time: time, timestamp: timestamp};
@@ -248,10 +265,11 @@ export default function Timer() {
             alert("Error: Unauthorized, please restart your browser");
         }
     }
+
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
         setDropDown(prev => ({...prev, [id]: !prev[id]}));
-        
+
     }
 
     /**
@@ -259,20 +277,24 @@ export default function Timer() {
      * {MongoID, UserID, SessionName, timeData[]}
      * @returns {Promise<void>}
      */
-    async function createSession(sessionName){
+    async function createSession(sessionName, isThreeByThree){
         try{
             const response = await fetch('/api/sessions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({sessionName: sessionName}),
+                body: JSON.stringify({sessionName: sessionName, isThreeByThree: isThreeByThree}),
             })
+            if(response.ok){
+                setNewSessionCreated(true)
+                setSelectedSession(sessionName)
+            }
         } catch (error) {
             console.error(' createSession Error:', error);
         }
     }
-
+    /* Gets one User sessions */
     async function getSession(sessionName){
         try{
             const response = await fetch(`/api/sessions?sessionName=${sessionName}`, {
@@ -280,6 +302,21 @@ export default function Timer() {
             })
             if(response.ok) {
                 return response.json();
+            }
+        } catch (error) {
+            console.error('Error fetching user sessions: ', error);
+        }
+    }
+    /* Gets All Existing User sessions */
+    async function getAllSessions() {
+        try{
+            const response = await fetch(`/api/sessions?getAllSessions=true`, {
+                method: 'GET'
+            })
+            if(response.ok) {
+                const result = await response.json();
+                const parseSessions = result.session.map(session => session.sessionName)
+                setAllSessions(parseSessions)
             }
         } catch (error) {
             console.error('Error fetching user sessions: ', error);
@@ -296,7 +333,7 @@ export default function Timer() {
 
         return (
             <li key={solve._id}>
-                <button 
+                <button
                     className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
                         ${dropDown[solve._id] 
                             ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
@@ -306,21 +343,21 @@ export default function Timer() {
                     onClick={() => toggleDropDown(solve._id)}
                 >
                     <span>{time}</span>
-                    <svg 
+                    <svg
                         className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve._id] ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                     >
-                        <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
                             d="M19 9l-7 7-7-7"
                         />
                     </svg>
                 </button>
-                <div 
+                <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
                         ${dropDown[solve._id] ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
@@ -360,31 +397,45 @@ export default function Timer() {
         <section className="flex h-full">
             <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
-                    <select 
+                    <select
                         className="dropdown w-full text-xl h-12"
                         value={selectedSession}
                         onChange={(e) => setSelectedSession(e.target.value)}
                     >
-                        <option value="3x3">3x3</option>
-                        <option value="5x5">5x5</option>
+                        {
+                            allSessions.map((session, index) => (
+                                <option key={index} value={session}>
+                                    {session}
+                                </option>
+                            ))
+                        }
                     </select>
-                    <button 
-                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"  
+                    <button
+                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"
                         title="Add Custom Session"
+                        onClick={() => setOpenAddSession(true)}
                     >
                         +
                     </button>
+                    {
+                        openAddSession && (
+                            <Modal showModal={openAddSession}
+                                   close={() => setOpenAddSession(false)}
+                                   createSession = {createSession}
+                            />
+                        )
+                    }
                 </div>
-                
+
                 <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
                 <ul className="space-y-2 text-2xl flex-grow overflow-y-auto">
                     {updateData.map(createTimeData)}
                 </ul>
                 
                 {/* Video recording component */}
-                <VideoRecorder 
-                    isRecording={isRecording} 
-                    onRecordingComplete={handleRecordingComplete} 
+                <VideoRecorder
+                    isRecording={isRecording}
+                    onRecordingComplete={handleRecordingComplete}
                 />
             </aside>
 
