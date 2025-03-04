@@ -300,7 +300,6 @@ export default function Timer() {
     /* Keep state of other dropdown and only change for ID dropdown */
     function toggleDropDown(id) {
         setDropDown(prev => ({...prev, [id]: !prev[id]}));
-
     }
 
     /**
