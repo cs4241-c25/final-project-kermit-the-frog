@@ -376,6 +376,12 @@ export default function Timer() {
                         >
                             DNF
                         </button>
+                        <button className="hover:bg-accent/10 px-2 py-1"
+                                onClick={() => showScramble(solve._id)}
+                        >
+                            Show Scramble
+                        </button>
+
                         <button className="hover:bg-accent/10 px-2 py-1 rounded-b-2xl text-red-400"
                             onClick={() => handleDelete(solve._id)}
                         >
@@ -416,14 +422,6 @@ export default function Timer() {
                     >
                         +
                     </button>
-                    {
-                        openAddSession && (
-                            <Modal showModal={openAddSession}
-                                   close={() => setOpenAddSession(false)}
-                                   createSession = {createSession}
-                            />
-                        )
-                    }
                 </div>
 
                 <h2 className="text-3xl font-bold mb-4 text-center">Times</h2>
