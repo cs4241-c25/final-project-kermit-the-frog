@@ -58,10 +58,15 @@ export default function Timer() {
 		// State for the current 3x3 scramble
 		const [scramble, setScramble] = useState('');
 		const [loading, setLoading] = useState(false);
+		const scrambleRef = useRef('');
 
 		useEffect(() => {
 			updateCurrentScramble();
 		}, []);
+
+		useEffect(() => {
+        scrambleRef.current = scramble;
+    }, [scramble]);
 
     useEffect(() => {
         if (session.status === "authenticated") {
@@ -183,8 +188,8 @@ export default function Timer() {
             downTriggered = true;
             updateTimerColor();
             if (running) {
-								updateCurrentScramble(); // Generate a new scramble for next timer event
                 stopTimer();
+								updateCurrentScramble(); // Generate a new scramble for next timer event
             } else if (event.code === "Space") {
                 startTimeoutTimer();
             }
@@ -258,9 +263,9 @@ export default function Timer() {
     }
 
     /* Need to change how data is added to Database with the newly created Session */
-    async function addTimeToDB(time, timestamp) {
-        try {
-            const data = {time: time, timestamp: timestamp, sessionName: valueRef.current};
+    async function addTimeToDB(time, timestamp, scramble) {
+				try {
+            const data = {time: time, timestamp: timestamp, sessionName: valueRef.current, scramble: scrambleRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
                 headers: {
@@ -541,20 +546,20 @@ export default function Timer() {
     >
         <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
             {/* Increased padding and font size */}
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
                 {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""} 
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""} 
             </label>
         </div>
     </div>
@@ -708,7 +713,7 @@ export default function Timer() {
             </aside>
 
             <main className="flex flex-col items-center justify-center w-9/12">
-								<div className={`absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
+								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
 										{loading
 										? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
 										: <div role="status">
@@ -719,9 +724,9 @@ export default function Timer() {
 													<span className="sr-only">Loading...</span>
 											</div>
 										}
-										<button type="button" className="xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex invisible md:visible" onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
+										<button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
 								</div>
-                <p id="timer" className={`text-8xl font-bold ${timerColor} pt-[4.16%]`}>
+                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
                     0.000
                 </p>
             </main>
