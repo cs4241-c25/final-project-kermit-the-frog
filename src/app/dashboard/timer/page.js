@@ -177,6 +177,7 @@ export default function Timer() {
     }
 
     function keyDownHandler(event) {
+				event.preventDefault();
         if (event.code === "ArrowUp") {
         }
         upTriggered = false;
