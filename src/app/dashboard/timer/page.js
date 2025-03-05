@@ -463,12 +463,16 @@ export default function Timer() {
     }
 
     function createAo5Data(solve) {
+        /*
+        Creates a List for each time again,
+         */
         let solveIndex = currentSession?.session?.timerData.findIndex(s => s.solveID === solve.solveID);
         //let solveIndex = currentSession?.session?.timerData.length - inverseIndex - 1;
         let time;
         if (solveIndex > currentSession?.session?.timerData.length - 5) {
             time = "-";
-        } else {
+        }
+        else{
 
             let timeArray = [];
 
@@ -479,14 +483,18 @@ export default function Timer() {
                         timeArray.push((currentSolve.time / 1000) + 2);
                     } else if (currentSolve.status === "OK") {
                         timeArray.push(currentSolve.time / 1000);
-                    } else {
+                    } else{
                         timeArray.push(999999999);
                     }
                 }
             }
+
+
             timeArray.sort((a, b) => a - b);
+
             timeArray.shift();
             timeArray.pop();
+
             let sum = timeArray.reduce((acc, current) => acc + current, 0);
             time = (sum / 3).toFixed(3);
             if (time > 100000) {
@@ -523,29 +531,30 @@ export default function Timer() {
                 <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
             ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-    >
-        <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-            {/* Increased padding and font size */}
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-        </div>
-    </div>
-</li>
+                >
+                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
+                        {/* Increased padding and font size */}
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""}
+                        </label>
+                    </div>
+                </div>
+            </li>
         )
     }
+
 
     function createTimeData(solve) {
         let time = (solve.time / 1000).toFixed(3);
