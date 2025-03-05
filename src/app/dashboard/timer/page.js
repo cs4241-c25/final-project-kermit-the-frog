@@ -167,6 +167,7 @@ export default function Timer() {
         }
         upTriggered = false;
         if (event.code === "Space") {
+            event.preventDefault();
             pressed = true;
             updateTimerColor();
         }
