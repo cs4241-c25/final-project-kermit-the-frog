@@ -514,77 +514,21 @@ export default function Timer() {
 				}
 			}
 
-			if (!currentSession?.session?.isThreeByThree) {
-				return (
-					<li key={solveIndex}>
-						<button
-							className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
-								${dropDown[solveIndex] 
-									? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
-									: 'rounded-2xl hover:bg-accent/10'
-								} 
-								flex items-center justify-center gap-2 transition-all duration-200`
-							}
-						>
-							<span>{time}</span>
-						</button>
-					</li>
-				)
-			}
-			else {
-				return (
-					<li key={solveIndex}>
-						<button
-							className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
-								${dropDown[solveIndex] 
-									? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
-									: 'rounded-2xl hover:bg-accent/10'
-								} 
-								flex items-center justify-center gap-2 transition-all duration-200`
-							}
-							onClick={() => (solveIndex < currentSession?.session?.timerData.length - 4) ? toggleDropDown(solveIndex) : ""}
-						>
-							<span>{time}</span>
-							<svg
-								className={`w-4 h-4 transition-transform duration-300 ${dropDown[solveIndex] ? 'rotate-180' : ''}`}
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M19 9l-7 7-7-7"
-								/>
-							</svg>
-						</button>
-						<div
-							className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
-							${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-						>
-							<div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-								{/* Increased padding and font size */}
-								<label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-										{(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-								</label>
-								<label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-										{(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
-								</label>
-								<label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-										{(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
-								</label>
-								<label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-										{(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
-								</label>
-								<label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-										{(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""} 
-								</label>
-							</div>
-						</div>
-					</li>
-				)
-			}
+			return (
+				<li key={solveIndex}>
+					<button
+						className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
+							${dropDown[solveIndex] 
+								? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
+								: 'rounded-2xl hover:bg-accent/10'
+							} 
+							flex items-center justify-center gap-2 transition-all duration-200`
+						}
+					>
+						<span className='whitespace-pre-line'>{time}</span>
+					</button>
+				</li>
+			)
     }
 
 
@@ -596,7 +540,7 @@ export default function Timer() {
         return (
             <li key={solve.solveID}>
                 <button
-                    className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
+                    className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
                         ${dropDown[solve.solveID]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
@@ -732,10 +676,10 @@ export default function Timer() {
                         {
                             (updateData !== null) && updateData.map((item, index) => (
                                 <li key={index} className="flex justify-between">
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createTimeData(item)}
                                     </ul>
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createAo5Data(item)}
                                     </ul>
                                 </li>
