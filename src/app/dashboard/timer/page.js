@@ -479,96 +479,56 @@ export default function Timer() {
     }
 
     function createAo5Data(solve) {
-        /*
-        Creates a List for each time again,
-         */
-        let solveIndex = currentSession?.session?.timerData.findIndex(s => s.solveID === solve.solveID);
-        //let solveIndex = currentSession?.session?.timerData.length - inverseIndex - 1;
-        let time;
-        if (solveIndex > currentSession?.session?.timerData.length - 5) {
-            time = "-";
-        }
-        else{
+			/*Creates a List for each time again,*/
+			let solveIndex = currentSession?.session?.timerData.findIndex(s => s.solveID === solve.solveID);
+			//let solveIndex = currentSession?.session?.timerData.length - inverseIndex - 1;
+			let time;
+			if (solveIndex > currentSession?.session?.timerData.length - 5) {
+				time = "-";
+			}
+			else{
+				let timeArray = [];
 
-            let timeArray = [];
+				for (let i = 0; i < 5; i++) {
+					const currentSolve = currentSession?.session?.timerData[solveIndex + i];
+					if (currentSolve) {
+						if (currentSolve.status === "+2") {
+							timeArray.push((currentSolve.time / 1000) + 2);
+						} else if (currentSolve.status === "OK") {
+							timeArray.push(currentSolve.time / 1000);
+						} else{
+							timeArray.push(999999999);
+						}
+					}
+				}
 
-            for (let i = 0; i < 5; i++) {
-                const currentSolve = currentSession?.session?.timerData[solveIndex + i];
-                if (currentSolve) {
-                    if (currentSolve.status === "+2") {
-                        timeArray.push((currentSolve.time / 1000) + 2);
-                    } else if (currentSolve.status === "OK") {
-                        timeArray.push(currentSolve.time / 1000);
-                    } else{
-                        timeArray.push(999999999);
-                    }
-                }
-            }
+				timeArray.sort((a, b) => a - b);
 
+				timeArray.shift();
+				timeArray.pop();
 
-            timeArray.sort((a, b) => a - b);
+				let sum = timeArray.reduce((acc, current) => acc + current, 0);
+				time = (sum / 3).toFixed(3);
+				if (time > 100000) {
+					time = "DNF";
+				}
+			}
 
-            timeArray.shift();
-            timeArray.pop();
-
-            let sum = timeArray.reduce((acc, current) => acc + current, 0);
-            time = (sum / 3).toFixed(3);
-            if (time > 100000) {
-                time = "DNF";
-            }
-        }
-
-        return (
-            <li key={solveIndex}>
-                <button
-                    className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
-            ${dropDown[solveIndex]
-                        ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
-                        : 'rounded-2xl hover:bg-accent/10'
-                    } 
-            flex items-center justify-center gap-2 transition-all duration-200`}
-                    onClick={() => (solveIndex < currentSession?.session?.timerData.length - 4) ? toggleDropDown(solveIndex) : ""}
-                >
-                    <span>{time}</span>
-                    <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solveIndex] ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                        />
-                    </svg>
-                </button>
-                <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
-            ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-                >
-                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-                        {/* Increased padding and font size */}
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""}
-                        </label>
-                    </div>
-                </div>
-            </li>
-        )
+			return (
+				<li key={solveIndex}>
+					<button
+						className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
+							${dropDown[solveIndex] 
+								? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
+								: 'rounded-2xl hover:bg-accent/10'
+							} 
+							flex items-center justify-center gap-2 transition-all duration-200`
+						}
+					>
+						<span className='whitespace-pre-line'>{time}</span>
+					</button>
+				</li>
+			)
     }
 
 
@@ -580,7 +540,7 @@ export default function Timer() {
         return (
             <li key={solve.solveID}>
                 <button
-                    className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
+                    className={`relative w-full text-center px-4 py-2 hover:bg-secondary/20 
                         ${dropDown[solve.solveID]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
@@ -590,7 +550,7 @@ export default function Timer() {
                 >
                     <span>{time}</span>
                     <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
+                        className={`absolute right-5 w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -607,11 +567,13 @@ export default function Timer() {
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
                         ${dropDown[solve.solveID] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
-                    <div
-                        className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
-                        <label className="hover:bg-accent/10 px-2 py-1 text-center font-bold text-xs">
-                            {getScramble(solve.solveID)}
-                        </label>
+                    <div className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
+                        {currentSession?.session?.isThreeByThree
+													? <label className="hover:bg-accent/10 px-2 py-1 text-center font-bold text-xs">
+                            	{getScramble(solve.solveID)}
+                        		</label>
+													: <div></div>
+												}
                         <button className="hover:bg-accent/10 px-2 py-1"
                                 onClick={() => handleStatusChange(solve.solveID, "OK", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
@@ -645,17 +607,22 @@ export default function Timer() {
 
 		// Make a GET request to the Scramble API server
 		const updateCurrentScramble = async () => {
-			setLoading(false);
-			try {
-				const data = await axios.get('https://scrambler-api-s5qg.onrender.com/getScramble')
-				.then(response => setScramble(response.data));
-				setLoading(true);
-			} catch {}
+			if (!currentSession?.session?.isThreeByThree){
+				setScramble('');
+			}
+			else {
+				setLoading(false);
+				try {
+					const data = await axios.get('https://scrambler-api-s5qg.onrender.com/getScramble')
+					.then(response => setScramble(response.data));
+					setLoading(true);
+				} catch {}
+			}
 		}
 
     return (
         <section className="relative flex h-full">
-            <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
+            <aside className="w-1/4 p-4 bg-primary/20 flex flex-col">
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
                     <select
                         className="dropdown w-full text-xl h-12"
@@ -709,10 +676,10 @@ export default function Timer() {
                         {
                             (updateData !== null) && updateData.map((item, index) => (
                                 <li key={index} className="flex justify-between">
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createTimeData(item)}
                                     </ul>
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createAo5Data(item)}
                                     </ul>
                                 </li>
@@ -728,8 +695,8 @@ export default function Timer() {
                 />
             </aside>
 
-            <main className="flex flex-col items-center justify-center w-9/12">
-								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
+            <main className="flex flex-col items-center justify-center w-3/4">
+								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-3/4 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
 										{loading
 										? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
 										: <div role="status">
