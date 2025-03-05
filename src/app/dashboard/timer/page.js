@@ -3,6 +3,7 @@ import {useSession} from 'next-auth/react';
 import {useRouter} from 'next/navigation';
 import {useEffect, useRef, useState} from 'react';
 import VideoRecorder from '../../../components/VideoRecorder';
+import Modal from "@/app/dashboard/timer/Modal";
 
 export default function Timer() {
     let startTime = 0;
@@ -60,14 +61,27 @@ export default function Timer() {
     }, [session.status, router]);
 
     useEffect(() => {
-        document.addEventListener("keydown", keyDownHandler);
-        document.addEventListener("keyup", keyUpHandler);
+        const keyDownHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                keyDownHandler(event);
+            }
+        };
+
+        const keyUpHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                keyUpHandler(event);
+            }
+        };
+
+        document.addEventListener("keydown", keyDownHandlerWrapper);
+        document.addEventListener("keyup", keyUpHandlerWrapper);
 
         return () => {
-            document.removeEventListener("keydown", keyDownHandler);
-            document.removeEventListener("keyup", keyUpHandler);
+            document.removeEventListener("keydown", keyDownHandlerWrapper);
+            document.removeEventListener("keyup", keyUpHandlerWrapper);
         };
-    }, []);
+    }, [openAddSession]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -168,7 +182,7 @@ export default function Timer() {
             pressed = true;
             updateTimerColor();
         }
-        if (!downTriggered) {
+        if (event.code === "Space" && !downTriggered) {
             downTriggered = true;
             updateTimerColor();
             if (running) {
@@ -180,12 +194,13 @@ export default function Timer() {
     }
 
     function keyUpHandler(event) {
+        event.preventDefault();
         downTriggered = false;
         if (event.code === "Space") {
             pressed = false;
             updateTimerColor();
         }
-        if (!upTriggered) {
+        if (event.code === "Space" && !upTriggered) {
             upTriggered = true;
             if (event.code === "Space" && ready) {
                 startTimer();
@@ -376,7 +391,6 @@ export default function Timer() {
 
     function findPB(sessionInput) {
         if (true) {
-
             let newArray = [];
 
             for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
@@ -412,52 +426,43 @@ export default function Timer() {
     }
 
     function findPBAo5(sessionInput) {
-        if (true) {
+        let newArray = [];
+        // sessionInput?.session?.timerData?.sort((a, b) => a.time - b.time);
 
-            let newArray = [];
-            // sessionInput?.session?.timerData?.sort((a, b) => a.time - b.time);
+        if (sessionInput?.session?.timerData.length < 5) {
+            setPBAo5("-");
+        }
 
-            if (sessionInput?.session?.timerData.length < 5) {
-                setPBAo5("-");
-            }
-
-            for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
-                const currentSolve = sessionInput?.session?.timerData[i];
-                if (currentSolve) {
-                    if (currentSolve.status === "+2") {
-                        newArray.push((currentSolve.time / 1000) + 2);
-                    } else if (currentSolve.status === "OK") {
-                        newArray.push(currentSolve.time / 1000);
-                    } else if (currentSolve.status === "DNF") {
-                        newArray.push(999999999);
-                    }
+        for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
+            const currentSolve = sessionInput?.session?.timerData[i];
+            if (currentSolve) {
+                if (currentSolve.status === "+2") {
+                    newArray.push((currentSolve.time / 1000) + 2);
+                } else if (currentSolve.status === "OK") {
+                    newArray.push(currentSolve.time / 1000);
+                } else if (currentSolve.status === "DNF") {
+                    newArray.push(999999999);
                 }
             }
+        }
 
-            let averagesArray = [];
-            for (let i = 0; i < newArray.length - 4; i++) {
-                let ao5 = calculateAo5(newArray[i], newArray[i + 1], newArray[i + 2], newArray[i + 3], newArray[i + 4]);
-                averagesArray.push(ao5);
-            }
+        let averagesArray = [];
+        for (let i = 0; i < newArray.length - 4; i++) {
+            let ao5 = calculateAo5(newArray[i], newArray[i + 1], newArray[i + 2], newArray[i + 3], newArray[i + 4]);
+            averagesArray.push(ao5);
+        }
 
-            averagesArray.sort((a, b) => a - b);
-            let pbAo5 = Number(averagesArray[0]).toFixed(3);
-            if (pbAo5 > 100000) {
-                pbAo5 = "DNF";
-            }
-            if (sessionInput?.session?.timerData.length >= 5) {
-                setPBAo5(pbAo5);
-            }
-
-        } else {
-            console.log("findPB NOT FOUND");
+        averagesArray.sort((a, b) => a - b);
+        let pbAo5 = Number(averagesArray[0]).toFixed(3);
+        if (pbAo5 > 100000) {
+            pbAo5 = "DNF";
+        }
+        if (sessionInput?.session?.timerData.length >= 5) {
+            setPBAo5(pbAo5);
         }
     }
 
     function createAo5Data(solve) {
-        /*
-        Creates a List for each time again,
-         */
         let solveIndex = currentSession?.session?.timerData.findIndex(s => s.solveID === solve.solveID);
         //let solveIndex = currentSession?.session?.timerData.length - inverseIndex - 1;
         let time;
@@ -479,13 +484,9 @@ export default function Timer() {
                     }
                 }
             }
-
-
             timeArray.sort((a, b) => a - b);
-
             timeArray.shift();
             timeArray.pop();
-
             let sum = timeArray.reduce((acc, current) => acc + current, 0);
             time = (sum / 3).toFixed(3);
             if (time > 100000) {
@@ -548,9 +549,6 @@ export default function Timer() {
     }
 
     function createTimeData(solve) {
-        /*
-        Creates a List for each time again,
-         */
         let time = (solve.time / 1000).toFixed(3);
         if (solve.status === "DNF") time = "DNF"
         else if (solve.status === '+2') time = `${(Number(time) + 2).toFixed(3)}+`
@@ -605,12 +603,6 @@ export default function Timer() {
                         >
                             DNF
                         </button>
-                        <button className="hover:bg-accent/10 px-2 py-1"
-                                onClick={() => showScramble(solve._id)}
-                        >
-                            Show Scramble
-                        </button>
-
                         <button className="hover:bg-accent/10 px-2 py-1 rounded-b-2xl text-red-400"
                                 onClick={() => handleDelete(solve.solveID, valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
@@ -653,35 +645,47 @@ export default function Timer() {
                     >
                         +
                     </button>
-                </div>
-                {/* 2x2 Grid Section */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-primary p-2 text-center">PB Bo1</div>
-                    <div className="bg-primary p-2 text-center">{pb}</div>
-                    <div className="bg-primary p-2 text-center">PB Ao5</div>
-                    <div className="bg-primary p-2 text-center">{pbAo5}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <h2 className="text-3xl font-bold mb-4 text-center">Time</h2>
-                    <h2 className="text-3xl font-bold mb-4 text-center">Ao5</h2>
-                    <ul className="text-2xl flex-grow overflow-y-auto">
-                        {(updateData !== null) && updateData.map((item, index) => (
-                            <ul className="flex-grow">
-                                {createTimeData(item)}
-                            </ul>))}
-                        {(updateData === null || createAo5Data === null) &&
-                            <li className="text-center">No data available</li>}
-                    </ul>
-                    <ul className="text-2xl flex-grow overflow-y-auto">
-                        {(updateData !== null) && updateData.map((item, index) => (
-                            <ul className="flex-grow">
-                                {createAo5Data(item)}
-                            </ul>))}
-                        {(updateData === null || createAo5Data === null) &&
-                            <li className="text-center">No data available</li>}
-                    </ul>
+                    {
+                        openAddSession && (
+                            <Modal showModal={openAddSession}
+                                   close={() => setOpenAddSession(false)}
+                                   createSession = {createSession}
+                            />
+                        )
+                    }
                 </div>
 
+                {/* 2x2 Grid Section */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-primary p-2 rounded text-center">PB Bo1</div>
+                    <div className="bg-primary p-2 rounded text-center">{pb}</div>
+                    <div className="bg-primary p-2 rounded text-center">PB Ao5</div>
+                    <div className="bg-primary p-2 rounded text-center">{pbAo5}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <h2 className="text-3xl font-bold text-center">Time</h2>
+                    <h2 className="text-3xl font-bold text-center">Ao5</h2>
+                </div>
+                <div className="overflow-y-auto">
+                    {
+                        (updateData === null || createAo5Data === null) &&
+                        <h2 className="text-2xl font-semibold mb-4 text-center"> No data available</h2>
+                    }
+                    <ul className={`text-2xl flex-grow overflow-y-auto ${(updateData !== null) ? "visible" : "invisible"}`}>
+                        {
+                            (updateData !== null) && updateData.map((item, index) => (
+                                <li key={index} className="flex justify-between">
+                                    <ul className="flex-grow">
+                                        {createTimeData(item)}
+                                    </ul>
+                                    <ul className="flex-grow">
+                                        {createAo5Data(item)}
+                                    </ul>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
 
                 {/* Video recording component */}
                 <VideoRecorder
