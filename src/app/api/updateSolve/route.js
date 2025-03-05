@@ -1,13 +1,13 @@
-import {ObjectId} from "mongodb";
+import {ObjectId, ReturnDocument} from "mongodb";
 
 console.log("data route running");
 
 import { getServerSession } from "next-auth"
-import { solveCollection} from "@/lib/db";
+import { solveCollection, sessionCollection} from "@/lib/db";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req) {
-  const { id, status } = await req.json();
+  const { id, status, sessionName } = await req.json();
 
   try {
     const session = await getServerSession(authOptions);
@@ -19,13 +19,24 @@ export async function POST(req) {
       });
     }             
 
-    console.log("going to update solve:");
-    console.log(id);
+    console.log("going to update solve:", id);
+    const userID = session.user.id;
+    console.log(userID);
+    console.log("Session name:", sessionName);
+
+    const doc = await sessionCollection.findOne(
+      { userID: userID, sessionName: sessionName }
+    );
+    console.log("document: ", doc);
 
     const result = await sessionCollection.updateOne(
-      { solveID: id},                                                                          
-      { $set: { status: status } }
+      { userID: userID, sessionName: sessionName },
+      { $set: { 'timerData.$[elem].status': status } },
+      { arrayFilters: [{'elem.solveID': id}],
+        ReturnDocument: 'after' }
     );
+
+
 
     if(result.modifiedCount  === 1){
       return new Response(JSON.stringify({ success: true, message: "Solve Update successful" }), {

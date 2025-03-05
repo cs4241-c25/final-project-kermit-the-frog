@@ -3,11 +3,11 @@ import {ObjectId} from "mongodb";
 console.log("Delete route running");
 
 import { getServerSession } from "next-auth"
-import {solveCollection} from "@/lib/db";
+import {solveCollection, sessionCollection} from "@/lib/db";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 export async function DELETE(req) {
-  const { id } = await req.json();
+  const { id, sessionName } = await req.json();
 
   try {
     const session = await getServerSession(authOptions);
@@ -20,8 +20,15 @@ export async function DELETE(req) {
 
     console.log("going to delete solve:");
     console.log(id);
-    const result = await solveCollection.deleteOne({ _id: new ObjectId(id) });
-    if(result.deletedCount === 1){
+
+    const userID = session.user.id;
+
+    const result = await sessionCollection.updateOne(
+      { userID: userID, sessionName: sessionName },
+      { $pull: { timerData: { solveID: id } } }
+    );
+
+    if(result.modifiedCount === 1){
       return new Response(JSON.stringify({ success: true, message: "Solve removal successful" }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
