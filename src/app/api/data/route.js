@@ -33,7 +33,7 @@ async function getUserByEmail(email) {
 }
 
 export async function POST(req) {
-  const { time, timestamp, sessionName } = await req.json();
+  const { time, timestamp, sessionName, scramble } = await req.json();
 
   try {
     const session = await getServerSession(authOptions);
@@ -64,7 +64,7 @@ export async function POST(req) {
                   time,
                   timestamp,
                   status: "OK",
-                  scramble: "R U R' U'" 
+                  scramble
               } 
           }
       }
