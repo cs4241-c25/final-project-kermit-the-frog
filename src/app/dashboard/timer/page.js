@@ -540,7 +540,7 @@ export default function Timer() {
         return (
             <li key={solve.solveID}>
                 <button
-                    className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
+                    className={`relative w-full text-center px-4 py-2 hover:bg-secondary/20 
                         ${dropDown[solve.solveID]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
@@ -550,7 +550,7 @@ export default function Timer() {
                 >
                     <span>{time}</span>
                     <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
+                        className={`absolute right-5 w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
