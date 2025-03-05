@@ -72,13 +72,21 @@ export default function SolveTimeTrend({ solves }) {
     }, [colors]); // 🔥 Ensure colors update when `colors` change
 
     useEffect(() => {
-        if (!solves || !Array.isArray(solves) || solves.length === 0) return; // 🔥 Ensure solves is valid
+        if (!solves || !Array.isArray(solves) || solves.length === 0) {
+            d3.select(containerRef.current).selectAll('*').remove(); // 🔥 Clear chart immediately
+            return;
+        }
+
         if (containerRef.current) {
+            d3.select(containerRef.current).selectAll('*').remove(); // 🔥 Ensure no old elements remain
             drawSolveTimeTrend(solves);
             window.addEventListener('resize', handleResize);
         }
 
-        return () => window.removeEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            d3.select(containerRef.current).selectAll('*').remove(); // 🔥 Ensure cleanup on unmount
+        };
     }, [solves]);
 
     if (showTimeView) {
