@@ -1,7 +1,7 @@
 'use client';
-import {useSession} from 'next-auth/react';
-import {useRouter} from 'next/navigation';
-import {useEffect, useRef, useState} from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import VideoRecorder from '../../../components/VideoRecorder';
 import Modal from "@/app/dashboard/timer/Modal";
 
@@ -524,8 +524,7 @@ export default function Timer() {
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
             ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
-                    <div
-                        className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
+                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
                         {/* Increased padding and font size */}
                         <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
                             {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
