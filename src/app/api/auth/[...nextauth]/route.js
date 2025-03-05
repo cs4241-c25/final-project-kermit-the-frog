@@ -52,26 +52,32 @@ export const authOptions = {
   },
   callbacks: {
     //When the signIn function is used with any auth routes, it calls a function to check if registered
-      async jwt({ token, account, profile }) {
-          if (account && profile) {
-              token.email = profile.email;
-              const response = await saveEmailToDB(profile.email);
-              const result = await response.json();
-              if(response.ok){
-                token.id = result._id;
-              } else {
-                console.log("Error adding userID to sessions")
-              }
+    async jwt( { token, account, profile, user } ) {
+      if (account && profile) {
+          token.email = profile.email;
+          const result = await saveEmailToDB(profile.email);
+          if (result.success) {
+              token.id = result._id;
           } else {
-              token.id = token.sub
+              console.log("Error adding userID to sessions")
           }
-          return token
-      },
+      }
+      if(user){
+          if(account.provider === "credentials") {
+              if(user.id) {
+                  token.id = user.id
+              }
+          }
+      }
+
+      return token
+  },
       async session({ session,token }) {
         session.user.email = token.email;
         if(token.id) {
           session.user.id = token.id;
         }
+        console.log(session);
         return session;
       }
   }
