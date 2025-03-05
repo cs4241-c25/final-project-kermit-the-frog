@@ -523,27 +523,27 @@ export default function Timer() {
                 <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
             ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-                >
-                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-                        {/* Increased padding and font size */}
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                            {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                            {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                            {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                            {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                            {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                    </div>
-                </div>
-            </li>
+    >
+        <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
+            {/* Increased padding and font size */}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+                {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            </label>
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            </label>
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            </label>
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            </label>
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            </label>
+        </div>
+    </div>
+</li>
         )
     }
 
