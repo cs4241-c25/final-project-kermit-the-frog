@@ -35,21 +35,12 @@ export async function saveEmailToDB(email){
   try {
     const existingUser = await userCollection.findOne({ email });
     if (existingUser) {
-      return new Response(JSON.stringify({ success: false, message: "Email is already registered", _id: existingUser._id }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return { success: true, message: "Email is already registered", _id: existingUser._id }
     }
 
     const newUser = await userCollection.insertOne({ email, password:null, isOauth:true });
-    return new Response(JSON.stringify({ success: true, message: "Registration successful", _id: newUser.insertedId }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return { success: true, message: "Registration successful", _id: newUser.insertedId }
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, message: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return { success: false, message: error.message }
   }
 }
