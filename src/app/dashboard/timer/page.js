@@ -1,7 +1,7 @@
 'use client';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import VideoRecorder from '../../../components/VideoRecorder';
 import Modal from "@/app/dashboard/timer/Modal";
 import axios from 'axios'
@@ -75,14 +75,27 @@ export default function Timer() {
     }, [session.status, router]);
 
     useEffect(() => {
-        document.addEventListener("keydown", keyDownHandler);
-        document.addEventListener("keyup", keyUpHandler);
+        const keyDownHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                keyDownHandler(event);
+            }
+        };
+
+        const keyUpHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                keyUpHandler(event);
+            }
+        };
+
+        document.addEventListener("keydown", keyDownHandlerWrapper);
+        document.addEventListener("keyup", keyUpHandlerWrapper);
 
         return () => {
-            document.removeEventListener("keydown", keyDownHandler);
-            document.removeEventListener("keyup", keyUpHandler);
+            document.removeEventListener("keydown", keyDownHandlerWrapper);
+            document.removeEventListener("keyup", keyUpHandlerWrapper);
         };
-    }, []);
+    }, [openAddSession]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -93,15 +106,15 @@ export default function Timer() {
     }, []);
 
     useEffect(() => {
-        if(selectedSession !== null) {
+        if (selectedSession !== null) {
             setCurrentSession(getSession(selectedSession));
         }
-    },[selectedSession, sessionUpdater]);
+    }, [selectedSession, sessionUpdater]);
 
     /* Runs once when the page loads to set the default Session */
     useEffect(() => {
         setCurrentSession(getSession('3x3'));
-    },[])
+    }, [])
 
     useEffect(() => {
         updateTable();
@@ -121,8 +134,7 @@ export default function Timer() {
                     findPBAo5(resolvedSession);
                     resolvedSession.session.timerData.sort((a, b) => b.timestamp - a.timestamp);
                     setUpdateData(resolvedSession.session.timerData);
-                }
-                else{
+                } else {
                     setUpdateData(null);
                 }
             }).catch(error => console.error("Error resolving session:", error));
@@ -134,7 +146,7 @@ export default function Timer() {
     * options if it doesn't already exist (a saftey check if it gets past db check)
     */
     useEffect(() => {
-        if(newSessionCreated && selectedSession) {
+        if (newSessionCreated && selectedSession) {
             setAllSessions((prev) =>
                 prev.includes(selectedSession) ? prev : [...prev, selectedSession])
         }
@@ -185,7 +197,7 @@ export default function Timer() {
             pressed = true;
             updateTimerColor();
         }
-        if (!downTriggered) {
+        if (event.code === "Space" && !downTriggered) {
             downTriggered = true;
             updateTimerColor();
             if (running) {
@@ -198,12 +210,13 @@ export default function Timer() {
     }
 
     function keyUpHandler(event) {
+        event.preventDefault();
         downTriggered = false;
         if (event.code === "Space") {
             pressed = false;
             updateTimerColor();
         }
-        if (!upTriggered) {
+        if (event.code === "Space" && !upTriggered) {
             upTriggered = true;
             if (event.code === "Space" && ready) {
                 startTimer();
@@ -329,8 +342,8 @@ export default function Timer() {
      * {MongoID, UserID, SessionName, timeData[]}
      * @returns {Promise<void>}
      */
-    async function createSession(sessionName, isThreeByThree){
-        try{
+    async function createSession(sessionName, isThreeByThree) {
+        try {
             setPB("-");
             setPBAo5("-");
             const response = await fetch('/api/sessions', {
@@ -340,7 +353,7 @@ export default function Timer() {
                 },
                 body: JSON.stringify({sessionName: sessionName, isThreeByThree: isThreeByThree}),
             })
-            if(response.ok){
+            if (response.ok) {
                 setNewSessionCreated(true)
                 setSelectedSession(sessionName)
             }
@@ -348,26 +361,28 @@ export default function Timer() {
             console.error(' createSession Error:', error);
         }
     }
+
     /* Gets one User sessions */
-    async function getSession(sessionName){
-        try{
+    async function getSession(sessionName) {
+        try {
             const response = await fetch(`/api/sessions?sessionName=${sessionName}`, {
                 method: 'GET'
             })
-            if(response.ok) {
+            if (response.ok) {
                 return response.json();
             }
         } catch (error) {
             console.error('Error fetching user sessions: ', error);
         }
     }
+
     /* Gets All Existing User sessions */
     async function getAllSessions() {
-        try{
+        try {
             const response = await fetch(`/api/sessions?getAllSessions=true`, {
                 method: 'GET'
             })
-            if(response.ok) {
+            if (response.ok) {
                 const result = await response.json();
                 const parseSessions = result.session.map(session => session.sessionName)
                 setAllSessions(parseSessions)
@@ -377,22 +392,21 @@ export default function Timer() {
         }
     }
 
-    function getScramble(solveID){
-        if(currentSession){
-        const scramble = currentSession.session?.timerData.find(
-            (item) => item.solveID === solveID
-          )?.scramble;
-          
-          if (scramble) {
-            return scramble;
-          } else {
-          }
+    function getScramble(solveID) {
+        if (currentSession) {
+            const scramble = currentSession.session?.timerData.find(
+                (item) => item.solveID === solveID
+            )?.scramble;
+
+            if (scramble) {
+                return scramble;
+            } else {
+            }
         }
     }
 
     function findPB(sessionInput) {
         if (true) {
-
             let newArray = [];
 
             for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
@@ -400,8 +414,7 @@ export default function Timer() {
                 if (currentSolve) {
                     if (currentSolve.status === "+2") {
                         newArray.push((currentSolve.time / 1000) + 2);
-                    }
-                    else if (currentSolve.status === "OK") {
+                    } else if (currentSolve.status === "OK") {
                         newArray.push(currentSolve.time / 1000);
                     }
                 }
@@ -409,20 +422,19 @@ export default function Timer() {
 
             newArray.sort((a, b) => a - b);
             let pb = newArray[0];
-            if(!pb){
+            if (!pb) {
                 pb = "-";
                 setPB(pb);
                 return;
             }
             setPB(pb.toFixed(3));
-            return;
-        }
-        else{
+
+        } else {
             console.log("findPB NOT FOUND");
         }
     }
 
-    function calculateAo5(one, two, three, four, five){
+    function calculateAo5(one, two, three, four, five) {
         let sum = one + two + three + four + five;
         let min = Math.min(one, two, three, four, five);
         let max = Math.max(one, two, three, four, five);
@@ -430,48 +442,39 @@ export default function Timer() {
     }
 
     function findPBAo5(sessionInput) {
-        if (true) {
+        let newArray = [];
+        // sessionInput?.session?.timerData?.sort((a, b) => a.time - b.time);
 
-            let newArray = [];
-            // sessionInput?.session?.timerData?.sort((a, b) => a.time - b.time);
+        if (sessionInput?.session?.timerData.length < 5) {
+            setPBAo5("-");
+        }
 
-            if(sessionInput?.session?.timerData.length < 5){
-                setPBAo5("-");
-            }
-
-            for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
-                const currentSolve = sessionInput?.session?.timerData[i];
-                if (currentSolve) {
-                    if (currentSolve.status === "+2") {
-                        newArray.push((currentSolve.time / 1000) + 2);
-                    }
-                    else if (currentSolve.status === "OK") {
-                        newArray.push(currentSolve.time / 1000);
-                    }
-                    else if (currentSolve.status === "DNF") {
-                        newArray.push(999999999);
-                    }
+        for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
+            const currentSolve = sessionInput?.session?.timerData[i];
+            if (currentSolve) {
+                if (currentSolve.status === "+2") {
+                    newArray.push((currentSolve.time / 1000) + 2);
+                } else if (currentSolve.status === "OK") {
+                    newArray.push(currentSolve.time / 1000);
+                } else if (currentSolve.status === "DNF") {
+                    newArray.push(999999999);
                 }
             }
-
-            let averagesArray = [];
-            for (let i = 0; i < newArray.length - 4; i++) {
-                let ao5 = calculateAo5(newArray[i], newArray[i + 1], newArray[i + 2], newArray[i + 3], newArray[i + 4]);
-                averagesArray.push(ao5);
-            }
-
-            averagesArray.sort((a, b) => a - b);
-            let pbAo5 = Number(averagesArray[0]).toFixed(3);
-            if (pbAo5 > 100000) {
-                pbAo5 = "DNF";
-            }
-            if(sessionInput?.session?.timerData.length >= 5){
-                setPBAo5(pbAo5);
-            }
-            
         }
-        else{
-            console.log("findPB NOT FOUND");
+
+        let averagesArray = [];
+        for (let i = 0; i < newArray.length - 4; i++) {
+            let ao5 = calculateAo5(newArray[i], newArray[i + 1], newArray[i + 2], newArray[i + 3], newArray[i + 4]);
+            averagesArray.push(ao5);
+        }
+
+        averagesArray.sort((a, b) => a - b);
+        let pbAo5 = Number(averagesArray[0]).toFixed(3);
+        if (pbAo5 > 100000) {
+            pbAo5 = "DNF";
+        }
+        if (sessionInput?.session?.timerData.length >= 5) {
+            setPBAo5(pbAo5);
         }
     }
 
@@ -501,7 +504,7 @@ export default function Timer() {
                     }
                 }
             }
-            
+
 
             timeArray.sort((a, b) => a - b);
 
@@ -517,61 +520,59 @@ export default function Timer() {
 
         return (
             <li key={solveIndex}>
-    <button
-        className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
-            ${dropDown[solveIndex] 
-                ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
-                : 'rounded-2xl hover:bg-accent/10'
-            } 
+                <button
+                    className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
+            ${dropDown[solveIndex]
+                        ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
+                        : 'rounded-2xl hover:bg-accent/10'
+                    } 
             flex items-center justify-center gap-2 transition-all duration-200`}
-        onClick={() => (solveIndex < currentSession?.session?.timerData.length - 4) ? toggleDropDown(solveIndex) : ""}
-    >
-        <span>{time}</span>
-        <svg
-            className={`w-4 h-4 transition-transform duration-300 ${dropDown[solveIndex] ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-            />
-        </svg>
-    </button>
-    <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
+                    onClick={() => (solveIndex < currentSession?.session?.timerData.length - 4) ? toggleDropDown(solveIndex) : ""}
+                >
+                    <span>{time}</span>
+                    <svg
+                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solveIndex] ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                        />
+                    </svg>
+                </button>
+                <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
             ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-    >
-        <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-            {/* Increased padding and font size */}
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
-            </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""} 
-            </label>
-        </div>
-    </div>
-</li>
+                >
+                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
+                        {/* Increased padding and font size */}
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
+                        </label>
+                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                            {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""}
+                        </label>
+                    </div>
+                </div>
+            </li>
         )
     }
 
+
     function createTimeData(solve) {
-        /*
-        Creates a List for each time again,
-         */
         let time = (solve.time / 1000).toFixed(3);
         if (solve.status === "DNF") time = "DNF"
         else if (solve.status === '+2') time = `${(Number(time) + 2).toFixed(3)}+`
@@ -580,10 +581,10 @@ export default function Timer() {
             <li key={solve.solveID}>
                 <button
                     className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
-                        ${dropDown[solve.solveID] 
-                            ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10' 
-                            : 'rounded-2xl hover:bg-accent/10'
-                        } 
+                        ${dropDown[solve.solveID]
+                        ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
+                        : 'rounded-2xl hover:bg-accent/10'
+                    } 
                         flex items-center justify-center gap-2 transition-all duration-200`}
                     onClick={() => toggleDropDown(solve.solveID)}
                 >
@@ -606,27 +607,28 @@ export default function Timer() {
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
                         ${dropDown[solve.solveID] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
-                    <div className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
+                    <div
+                        className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
                         <label className="hover:bg-accent/10 px-2 py-1 text-center font-bold text-xs">
                             {getScramble(solve.solveID)}
                         </label>
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve.solveID, "OK", valueRef.current).then(() => toggleDropDown(solve.solveID))}
+                                onClick={() => handleStatusChange(solve.solveID, "OK", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
                             OK
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve.solveID, "+2", valueRef.current).then(() => toggleDropDown(solve.solveID))}
+                                onClick={() => handleStatusChange(solve.solveID, "+2", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
                             +2
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1"
-                            onClick={() => handleStatusChange(solve.solveID, "DNF", valueRef.current).then(() => toggleDropDown(solve.solveID))}
+                                onClick={() => handleStatusChange(solve.solveID, "DNF", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
                             DNF
                         </button>
                         <button className="hover:bg-accent/10 px-2 py-1 rounded-b-2xl text-red-400"
-                            onClick={() => handleDelete(solve.solveID, valueRef.current).then(() => toggleDropDown(solve.solveID))}
+                                onClick={() => handleDelete(solve.solveID, valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
                             Delete
                         </button>
@@ -658,7 +660,9 @@ export default function Timer() {
                     <select
                         className="dropdown w-full text-xl h-12"
                         value={valueRef.current}
-                        onChange={(e) => {setSelectedSession(e.target.value)}}
+                        onChange={(e) => {
+                            setSelectedSession(e.target.value)
+                        }}
                     >
                         {
                             allSessions.map((session, index) => (
@@ -684,28 +688,39 @@ export default function Timer() {
                         )
                     }
                 </div>
-                    {/* 2x2 Grid Section */}
+
+                {/* 2x2 Grid Section */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-primary p-2 text-center">PB Bo1</div>
-                  <div className="bg-primary p-2 text-center">{pb}</div>
-                  <div className="bg-primary p-2 text-center">PB Ao5</div>
-                  <div className="bg-primary p-2 text-center">{pbAo5}</div>
+                    <div className="bg-primary p-2 rounded text-center">PB Bo1</div>
+                    <div className="bg-primary p-2 rounded text-center">{pb}</div>
+                    <div className="bg-primary p-2 rounded text-center">PB Ao5</div>
+                    <div className="bg-primary p-2 rounded text-center">{pbAo5}</div>
                 </div>
-                <h2 className="text-3xl font-bold mb-4 text-center">Time ------- Ao5</h2>
-                <ul className="text-2xl flex-grow overflow-y-auto">
-  {(updateData !== null) && updateData.map((item, index) => (
-    <li key={index} className="flex justify-between">
-      <ul className="flex-grow">
-        {createTimeData(item)}
-      </ul>
-      <ul className="flex-grow">
-        {createAo5Data(item)}
-      </ul>
-    </li>
-  ))}
-  {(updateData === null || createAo5Data === null) && <li className="text-center">No data available</li>}
-</ul>
-                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <h2 className="text-3xl font-bold text-center">Time</h2>
+                    <h2 className="text-3xl font-bold text-center">Ao5</h2>
+                </div>
+                <div className="overflow-y-auto">
+                    {
+                        (updateData === null || createAo5Data === null) &&
+                        <h2 className="text-2xl font-semibold mb-4 text-center"> No data available</h2>
+                    }
+                    <ul className={`text-2xl flex-grow overflow-y-auto ${(updateData !== null) ? "visible" : "invisible"}`}>
+                        {
+                            (updateData !== null) && updateData.map((item, index) => (
+                                <li key={index} className="flex justify-between">
+                                    <ul className="flex-grow">
+                                        {createTimeData(item)}
+                                    </ul>
+                                    <ul className="flex-grow">
+                                        {createAo5Data(item)}
+                                    </ul>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+
                 {/* Video recording component */}
                 <VideoRecorder
                     isRecording={isRecording}
