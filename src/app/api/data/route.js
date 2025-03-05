@@ -1,7 +1,8 @@
 import {ObjectId} from "mongodb";
 import {getServerSession} from "next-auth"
-import {solveCollection, userCollection} from "@/lib/db";
+import {solveCollection, userCollection, sessionCollection} from "@/lib/db";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import { v4 as uuidv4 } from 'uuid';
 
 console.log("data route running");
 
@@ -32,11 +33,7 @@ async function getUserByEmail(email) {
 }
 
 export async function POST(req) {
-  console.log("setting time and timestamp to below:");
-  const { time, timestamp } = await req.json();
-  console.log(time);
-  console.log(timestamp);
-  console.log("setting time and timestamp to above");
+  const { time, timestamp, sessionName } = await req.json();
 
   try {
     const session = await getServerSession(authOptions);
@@ -50,7 +47,29 @@ export async function POST(req) {
     const email = session.user.email;
     let userID = await getUserIDByEmail(email);
     /* with userID and sessions name find sessions row, use the $push to push this information into the array of objects in mongoDB */
-    await solveCollection.insertOne({ userID, time, timestamp, status: "OK" });
+
+    userID = userID.toString();
+    const solveID = uuidv4().replace(/-/g, '');
+
+
+    console.log("Looking for something with userID: ", userID);
+    console.log("Looking for something with sessionName: ", sessionName);
+    
+    await sessionCollection.updateOne(
+      { userID: userID, sessionName: sessionName }, // Find document with matching userID and sessionname
+      { 
+          $push: { 
+              timerData: { 
+                  solveID,
+                  time,
+                  timestamp,
+                  status: "OK",
+                  scramble: "R U R' U'" 
+              } 
+          }
+      }
+  );
+
     return new Response(JSON.stringify({ success: true, message: "Solve added successful" }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
