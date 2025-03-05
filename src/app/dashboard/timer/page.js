@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import VideoRecorder from '../../../components/VideoRecorder';
 import Modal from "@/app/dashboard/timer/Modal";
+import axios from 'axios'
 
 export default function Timer() {
     let startTime = 0;
@@ -53,6 +54,19 @@ export default function Timer() {
     useEffect(() => {
         valueRef.current = selectedSession;
     }, [selectedSession]);
+
+		// State for the current 3x3 scramble
+		const [scramble, setScramble] = useState('');
+		const [loading, setLoading] = useState(false);
+		const scrambleRef = useRef('');
+
+		useEffect(() => {
+			updateCurrentScramble();
+		}, []);
+
+		useEffect(() => {
+        scrambleRef.current = scramble;
+    }, [scramble]);
 
     useEffect(() => {
         if (session.status === "authenticated") {
@@ -176,6 +190,7 @@ export default function Timer() {
             updateTimerColor();
             if (running) {
                 stopTimer();
+								updateCurrentScramble(); // Generate a new scramble for next timer event
             } else if (event.code === "Space") {
                 startTimeoutTimer();
             }
@@ -249,9 +264,9 @@ export default function Timer() {
     }
 
     /* Need to change how data is added to Database with the newly created Session */
-    async function addTimeToDB(time, timestamp) {
-        try {
-            const data = {time: time, timestamp: timestamp, sessionName: valueRef.current};
+    async function addTimeToDB(time, timestamp, scramble) {
+				try {
+            const data = {time: time, timestamp: timestamp, sessionName: valueRef.current, scramble: scrambleRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
                 headers: {
@@ -532,20 +547,20 @@ export default function Timer() {
     >
         <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
             {/* Increased padding and font size */}
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
                 {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
             </label>
-            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-sm">
-                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""} 
+            <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
+                {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""} 
             </label>
         </div>
     </div>
@@ -626,8 +641,18 @@ export default function Timer() {
         console.log("Recording completed, video size:", blob.size);
     };
 
+		// Make a GET request to the Scramble API server
+		const updateCurrentScramble = async () => {
+			setLoading(false);
+			try {
+				const data = await axios.get('https://scrambler-api-s5qg.onrender.com/getScramble')
+				.then(response => setScramble(response.data));
+				setLoading(true);
+			} catch {}
+		}
+
     return (
-        <section className="flex h-full">
+        <section className="relative flex h-full">
             <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
                     <select
@@ -688,8 +713,21 @@ export default function Timer() {
                 />
             </aside>
 
-            <main className="flex items-center justify-center w-9/12">
-                <p id="timer" className={`text-8xl font-bold ${timerColor}`}>
+            <main className="flex flex-col items-center justify-center w-9/12">
+								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
+										{loading
+										? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
+										: <div role="status">
+													<svg aria-hidden="true" className="inline w-8 h-8 text-background animate-spin fill-primary/60" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+															<path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+															<path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+													</svg>
+													<span className="sr-only">Loading...</span>
+											</div>
+										}
+										<button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
+								</div>
+                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
                     0.000
                 </p>
             </main>
