@@ -256,7 +256,7 @@ export default function VideoRecorder({ isRecording, onRecordingComplete, isExpa
 
     return (
         <>
-            <div className="mt-auto p-4 pt-4 rounded-tl-xl absolute bottom-0 right-0 bg-primary/40 w-[20%]">
+            <div className="mt-auto p-4 pt-4 rounded-tl-xl absolute bottom-0 right-0 bg-primary/40 w-[50%] lg:w-[20%] flex-1">
                 <div className="flex items-center justify-between">
                     <label className="text-lg m-2 font-medium cursor-pointer" onClick={toggleVideoMode}>
                         Video Mode {videoMode ? '(On)' : '(Off)'}

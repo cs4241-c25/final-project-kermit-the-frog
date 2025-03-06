@@ -95,7 +95,7 @@ export default function Login() {
 
     return (
         <section className="flex flex-col items-center justify-center h-full py-8">
-            <div className="md:w-1/2 text-center p-8">
+            <div className=" w-full md:w-1/2 text-center p-8">
                 <h1 className="text-5xl ">Log in</h1>
                 <form className="text-3xl  p-4 pb-0" onSubmit={handleSubmit}>
                     <div className="flex items-center justify-center">
@@ -119,12 +119,12 @@ export default function Login() {
                     <div className="flex flex-col my-auto">
                         <div className="m-2">
                             <input type="email" id="email" name="email" autoComplete="email" placeholder="Email"
-                                   className="w-3/5 rounded-xl p-4 bg-primary/20 border border-white"
+                                   className="w-full md:w-3/5 rounded-xl p-4 bg-primary/20 border border-white"
                                    required/>
                         </div>
                         <div className="m-2">
                             <input type="password" id="password" name="password" placeholder="Password"
-                                   className="w-3/5 rounded-xl p-4 bg-primary/20 border border-white"
+                                   className="w-full md:w-3/5 rounded-xl p-4 bg-primary/20 border border-white"
                                    required/>
                         </div>
                     </div>
