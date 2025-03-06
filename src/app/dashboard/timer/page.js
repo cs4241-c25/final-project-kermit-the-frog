@@ -75,6 +75,8 @@ export default function Timer() {
     }, [session.status, router]);
 
     useEffect(() => {
+        const timerElement = document.getElementById("timer");
+
         const keyDownHandlerWrapper = (event) => {
             if (!openAddSession) {
                 keyDownHandler(event);
@@ -87,15 +89,35 @@ export default function Timer() {
             }
         };
 
+        const touchStartHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                touchStartHandler(event);
+            }
+        };
+
+        const touchEndHandlerWrapper = (event) => {
+            if (!openAddSession) {
+                touchEndHandler(event);
+            }
+        };
+
+        if (timerElement) {
+            timerElement.addEventListener("touchstart", touchStartHandlerWrapper);
+            timerElement.addEventListener("touchend", touchEndHandlerWrapper);
+        }
+
         document.addEventListener("keydown", keyDownHandlerWrapper);
         document.addEventListener("keyup", keyUpHandlerWrapper);
 
         return () => {
+            if (timerElement) {
+                timerElement.removeEventListener("touchstart", touchStartHandlerWrapper);
+                timerElement.removeEventListener("touchend", touchEndHandlerWrapper);
+            }
             document.removeEventListener("keydown", keyDownHandlerWrapper);
             document.removeEventListener("keyup", keyUpHandlerWrapper);
         };
     }, [openAddSession]);
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -189,7 +211,7 @@ export default function Timer() {
     }
 
     function keyDownHandler(event) {
-				event.preventDefault();
+        event.preventDefault();
         if (event.code === "ArrowUp") {
         }
         upTriggered = false;
@@ -203,7 +225,7 @@ export default function Timer() {
             updateTimerColor();
             if (running) {
                 stopTimer();
-								updateCurrentScramble(); // Generate a new scramble for next timer event
+                updateCurrentScramble(); // Generate a new scramble for next timer event
             } else if (event.code === "Space") {
                 startTimeoutTimer();
             }
@@ -227,6 +249,38 @@ export default function Timer() {
             }
         }
     }
+
+    function touchStartHandler(event) {
+        event.preventDefault();
+        updateTimerColor();
+        if (!downTriggered) {
+            downTriggered = true;
+            updateTimerColor();
+            if (running) {
+                stopTimer();
+                updateCurrentScramble();
+            } else {
+                startTimeoutTimer();
+            }
+        }
+    }
+
+    // Touch end handler (similar to keyUpHandler)
+    function touchEndHandler(event) {
+        event.preventDefault();
+        downTriggered = false;
+        updateTimerColor();
+        if (!upTriggered) {
+            upTriggered = true;
+            if (ready) {
+                startTimer();
+                stopTimeoutTimer();
+            } else {
+                stopTimeoutTimer();
+            }
+        }
+    }
+
 
     function startTimer() {
         clearInterval(timerInterval);
@@ -279,7 +333,7 @@ export default function Timer() {
 
     /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp, scramble) {
-				try {
+        try {
             const data = {time: time, timestamp: timestamp, sessionName: valueRef.current, scramble: scrambleRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
@@ -407,7 +461,6 @@ export default function Timer() {
     }
 
     function findPB(sessionInput) {
-        if (true) {
             let newArray = [];
 
             for (let i = 0; i < sessionInput?.session?.timerData.length; i++) {
@@ -430,9 +483,6 @@ export default function Timer() {
             }
             setPB(pb.toFixed(3));
 
-        } else {
-            console.log("findPB NOT FOUND");
-        }
     }
 
     function calculateAo5(one, two, three, four, five) {
@@ -623,11 +673,11 @@ export default function Timer() {
 		}
 
     return (
-        <section className="relative flex h-full">
-            <aside className="w-1/4 p-4 bg-primary/20 flex flex-col">
-                <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
+        <section className=" flex h-[100%] flex-col lg:flex-row">
+            <aside className="w-full lg:w-1/4 p-4 bg-primary/20 flex flex-col h-fit md:h-full">
+                <div className="flex lg:flex-col items-center gap-4 mb-4 justify-between">
                     <select
-                        className="dropdown w-full text-xl h-12"
+                        className="dropdown w-1/2 lg:w-full h-10 lg:h-12 text lg:text-xl"
                         value={valueRef.current}
                         onChange={(e) => {
                             setSelectedSession(e.target.value)
@@ -642,24 +692,15 @@ export default function Timer() {
                         }
                     </select>
                     <button
-                        className="button text-xl p-0 m-0 w-full h-12 lg:aspect-square lg:size-12"
+                        className="button text-xl p-0 m-0  w-1/2 lg:w-full h-10 lg:h-12 lg:aspect-square lg:size-12"
                         title="Add Custom Session"
                         onClick={() => setOpenAddSession(true)}
                     >
                         +
                     </button>
-                    {
-                        openAddSession && (
-                            <Modal showModal={openAddSession}
-                                   close={() => setOpenAddSession(false)}
-                                   createSession = {createSession}
-                            />
-                        )
-                    }
                 </div>
 
-                {/* 2x2 Grid Section */}
-                <table className="text-text font-semibold text-lg border-separate border-spacing-1 mb-4">
+                <table className="text-text font-semibold text-lg border-separate border-spacing-1 mb-4 hidden md:table ">
                     <tbody>
                     <tr>
                         <td className="bg-primary p-2 rounded text-center w-[50%]">Session Best:</td>
@@ -671,11 +712,11 @@ export default function Timer() {
                     </tr>
                     </tbody>
                 </table>
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div id="headerContainer" className="grid-cols-2 gap-4 mb-4 hidden lg:grid">
                     <h2 className="text-3xl font-bold text-center">Time</h2>
                     <h2 className="text-3xl font-bold text-center">Ao5</h2>
                 </div>
-                <div className="overflow-y-auto">
+                <div className="overflow-y-auto hidden lg:block">
                     {
                         (updateData === null || createAo5Data === null) &&
                         <h2 className="text-2xl font-semibold mb-4 text-center"> No data available</h2>
@@ -697,8 +738,8 @@ export default function Timer() {
                 </div>
             </aside>
 
-            <main className="flex flex-col items-center justify-center w-3/4">
-								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-3/4 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
+            <main className="flex flex-col items-center justify-center w-full lg:w-3/4 h-[100%] relative" >
+								<div className={`${currentSession?.session?.isThreeByThree ? 'hidden lg:flex' : 'hidden'} absolute top-0 items-center justify-center w-full h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''} `}>
 										{loading
 										? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
 										: <div role="status">
@@ -711,7 +752,7 @@ export default function Timer() {
 										}
 										<button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
 								</div>
-                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''} ${expandedPreview? 'ml-[25%] w-[70%]' : ''}`}>
+                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''} ${expandedPreview? 'ml-[25%] w-[70%]' : ''} pb-4 lg:pb-0 select-none`}>
                     0.000
                 </p>
                 {/* Video recording component */}
@@ -724,6 +765,15 @@ export default function Timer() {
                 />
 								</div>
             </main>
+            {
+                openAddSession && (
+                    <Modal showModal={openAddSession}
+                           close={() => setOpenAddSession(false)}
+                           createSession={createSession}
+                    />
+                )
+            }
         </section>
     );
+
 }

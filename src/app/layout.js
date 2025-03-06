@@ -21,6 +21,10 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
+    <head>
+      <title> </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
       <body className="h-screen flex flex-col bg-background text-text antialiased">
         <SessionProvider>
           <ThemeProvider>
