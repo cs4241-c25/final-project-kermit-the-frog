@@ -56,7 +56,7 @@ export default function Timer() {
     }, [selectedSession]);
 
 		// State for the current 3x3 scramble
-		const [scramble, setScramble] = useState('');
+		const [scramble, setScramble] = useState('No Scramble Generated');
 		const [loading, setLoading] = useState(false);
 		const scrambleRef = useRef('');
 
@@ -704,13 +704,8 @@ export default function Timer() {
   ))}
   {(updateData === null || createAo5Data === null) && <li className="text-center">No data available</li>}
 </ul>
+</aside> 
                 
-                {/* Video recording component */}
-                <VideoRecorder
-                    isRecording={isRecording}
-                    onRecordingComplete={handleRecordingComplete}
-                />
-            </aside>
 
             <main className="flex flex-col items-center justify-center w-9/12">
 								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
@@ -729,6 +724,11 @@ export default function Timer() {
                 <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
                     0.000
                 </p>
+                {/* Video recording component */}
+                <VideoRecorder
+                    isRecording={isRecording}
+                    onRecordingComplete={handleRecordingComplete}
+                />
             </main>
         </section>
     );
