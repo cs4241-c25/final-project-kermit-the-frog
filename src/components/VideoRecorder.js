@@ -9,7 +9,7 @@ import {
 } from '../utils/videoRecording';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function VideoRecorder({ isRecording, onRecordingComplete }) {
+export default function VideoRecorder({ isRecording, onRecordingComplete, isExpanded, isClosed }) {
     const [videoMode, setVideoMode] = useState(false);
     const [cameraPermission, setCameraPermission] = useState(null);
     const [expandedPreview, setExpandedPreview] = useState(false);
@@ -45,6 +45,14 @@ export default function VideoRecorder({ isRecording, onRecordingComplete }) {
             cleanupVideoResources();
         };
     }, []);
+
+    useEffect(() => {
+        if(expandedPreview){
+            isExpanded();
+        } else {
+            isClosed()
+        }
+    }, [expandedPreview]);
 
     // Complete cleanup of all video resources
     const cleanupVideoResources = () => {
@@ -248,7 +256,7 @@ export default function VideoRecorder({ isRecording, onRecordingComplete }) {
 
     return (
         <>
-            <div className="mt-auto p-4 pt-4 rounded-tl-xl absolute bottom-0 right-0 border-t bg-primary border-text/10 w-[25%">
+            <div className="mt-auto p-4 pt-4 rounded-tl-xl absolute bottom-0 right-0 bg-primary/40 w-[20%]">
                 <div className="flex items-center justify-between">
                     <label className="text-lg m-2 font-medium cursor-pointer" onClick={toggleVideoMode}>
                         Video Mode {videoMode ? '(On)' : '(Off)'}
