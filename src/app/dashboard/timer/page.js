@@ -545,7 +545,8 @@ export default function Timer() {
                         ${dropDown[solve.solveID]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
-                    } 
+                    		}
+												${openAddSession ? '-z-10' : ''}
                         flex items-center justify-center gap-2 transition-all duration-200`}
                     onClick={() => toggleDropDown(solve.solveID)}
                 >
@@ -665,8 +666,8 @@ export default function Timer() {
                         <td className="bg-primary p-2 rounded text-center w-[50%]">Session Best Ao5:</td>
                     </tr>
                     <tr>
-                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pbAo5}</td>
                         <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pb}</td>
+                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pbAo5}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -714,12 +715,14 @@ export default function Timer() {
                     0.000
                 </p>
                 {/* Video recording component */}
+								<div className={`${openAddSession ? '-z-10' : ''}`}>
                 <VideoRecorder
                     isRecording={isRecording}
                     isExpanded={() => {setExpandedPreview(true)}}
                     isClosed={() => {setExpandedPreview(false)}}
                     onRecordingComplete={handleRecordingComplete}
                 />
+								</div>
             </main>
         </section>
     );
