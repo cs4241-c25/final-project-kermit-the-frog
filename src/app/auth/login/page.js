@@ -22,6 +22,7 @@ export default function Login() {
         executeSessionCreation();
     }, [status]);
 
+
     useEffect(() => {
         if (searchParams.get('signupSuccess') === 'true') {
             setSignUpState(true);

@@ -75,6 +75,8 @@ export default function Timer() {
     }, [session.status, router]);
 
     useEffect(() => {
+        const timerElement = document.getElementById("timer");
+
         const keyDownHandlerWrapper = (event) => {
             if (!openAddSession) {
                 keyDownHandler(event);
@@ -99,22 +101,23 @@ export default function Timer() {
             }
         };
 
-
+        if (timerElement) {
+            timerElement.addEventListener("touchstart", touchStartHandlerWrapper);
+            timerElement.addEventListener("touchend", touchEndHandlerWrapper);
+        }
 
         document.addEventListener("keydown", keyDownHandlerWrapper);
         document.addEventListener("keyup", keyUpHandlerWrapper);
 
-        document.addEventListener("touchstart", touchStartHandlerWrapper);
-        document.addEventListener("touchend", touchEndHandlerWrapper);
-
         return () => {
+            if (timerElement) {
+                timerElement.removeEventListener("touchstart", touchStartHandlerWrapper);
+                timerElement.removeEventListener("touchend", touchEndHandlerWrapper);
+            }
             document.removeEventListener("keydown", keyDownHandlerWrapper);
             document.removeEventListener("keyup", keyUpHandlerWrapper);
-            document.removeEventListener("touchstart", touchStartHandlerWrapper);
-            document.removeEventListener("touchend", touchEndHandlerWrapper);
         };
     }, [openAddSession]);
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -329,7 +332,7 @@ export default function Timer() {
 
     /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp, scramble) {
-				try {
+        try {
             const data = {time: time, timestamp: timestamp, sessionName: valueRef.current, scramble: scrambleRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
