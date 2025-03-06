@@ -83,9 +83,16 @@ export async function POST(req) {
         )
 
         if (!findSession) {
+
+            let sessionData
+            if(sessionName === "3x3") {
+                sessionData = {userID: session.user.id, sessionName: sessionName, isThreeByThree: true, timerData: []}
+            } else {
+                sessionData =  {userID: session.user.id, sessionName: sessionName, isThreeByThree: isThreeByThree, timerData: []}
+            }
             console.log("Session Does not exist, continue with creation")
             const createSession = await sessionCollection.insertOne(
-                {userID: session.user.id, sessionName: sessionName, isThreeByThree: isThreeByThree, timerData: []}
+               sessionData,
             )
             return new Response(JSON.stringify({createSession: createSession.acknowledged}), {
                 status: 200,

@@ -45,12 +45,18 @@ export default function SolveTimeDistribution({ solves }) {
     }, []);
 
     useEffect(() => {
-        if (containerRef.current && solves.length > 0) {
-            drawSolveTimeDistribution(solves);
-            window.addEventListener('resize', handleResize);
+        if (solves.length === 0) {
+            d3.select(containerRef.current).selectAll('*').remove(); // Clear chart immediately
+            return;
         }
 
-        return () => window.removeEventListener('resize', handleResize);
+        drawSolveTimeDistribution(solves);
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            d3.select(containerRef.current).selectAll('*').remove(); // Ensure chart clears before re-rendering
+        };
     }, [solves]);
 
     function handleResize() {
