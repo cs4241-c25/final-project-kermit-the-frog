@@ -80,7 +80,7 @@ export default function SolveTimeDistribution({ solves }) {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
-        const times = data.map((solve) => solve.time / 1000);
+        const times = data.map((solve) => solve.adjustedTime / 1000);
         const minData = Math.floor(d3.min(times) * 2) / 2;
         const maxData = Math.ceil(d3.max(times) * 2) / 2;
         const xScale = d3.scaleLinear().domain([minData, maxData]).range([50, width - 50]);

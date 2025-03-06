@@ -260,7 +260,7 @@ export default function SolveTimeTrend({ solves }) {
                 }
                 return {
                     timestamp: new Date(solve.timestamp),
-                    time: solve.time / 1000
+                    time: solve.adjustedTime / 1000
                 };
             })
             .filter(d => d !== null);  // Remove invalid entries
