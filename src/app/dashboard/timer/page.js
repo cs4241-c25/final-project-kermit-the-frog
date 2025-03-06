@@ -55,16 +55,16 @@ export default function Timer() {
         valueRef.current = selectedSession;
     }, [selectedSession]);
 
-		// State for the current 3x3 scramble
-		const [scramble, setScramble] = useState('');
-		const [loading, setLoading] = useState(false);
-		const scrambleRef = useRef('');
+    // State for the current 3x3 scramble
+    const [scramble, setScramble] = useState('');
+    const [loading, setLoading] = useState(false);
+    const scrambleRef = useRef('');
 
-		useEffect(() => {
-			updateCurrentScramble();
-		}, []);
+    useEffect(() => {
+        updateCurrentScramble();
+    }, []);
 
-		useEffect(() => {
+    useEffect(() => {
         scrambleRef.current = scramble;
     }, [scramble]);
 
@@ -189,7 +189,7 @@ export default function Timer() {
     }
 
     function keyDownHandler(event) {
-				event.preventDefault();
+        event.preventDefault();
         if (event.code === "ArrowUp") {
         }
         upTriggered = false;
@@ -202,7 +202,7 @@ export default function Timer() {
             updateTimerColor();
             if (running) {
                 stopTimer();
-								updateCurrentScramble(); // Generate a new scramble for next timer event
+                updateCurrentScramble(); // Generate a new scramble for next timer event
             } else if (event.code === "Space") {
                 startTimeoutTimer();
             }
@@ -278,7 +278,7 @@ export default function Timer() {
 
     /* Need to change how data is added to Database with the newly created Session */
     async function addTimeToDB(time, timestamp, scramble) {
-				try {
+        try {
             const data = {time: time, timestamp: timestamp, sessionName: valueRef.current, scramble: scrambleRef.current};
             const response = await fetch('/api/data', {
                 method: 'POST',
@@ -479,9 +479,7 @@ export default function Timer() {
     }
 
     function createAo5Data(solve) {
-        /*
-        Creates a List for each time again,
-         */
+        /*Creates a List for each time again,*/
         let solveIndex = currentSession?.session?.timerData.findIndex(s => s.solveID === solve.solveID);
         //let solveIndex = currentSession?.session?.timerData.length - inverseIndex - 1;
         let time;
@@ -489,7 +487,6 @@ export default function Timer() {
             time = "-";
         }
         else{
-
             let timeArray = [];
 
             for (let i = 0; i < 5; i++) {
@@ -504,7 +501,6 @@ export default function Timer() {
                     }
                 }
             }
-
 
             timeArray.sort((a, b) => a - b);
 
@@ -522,51 +518,15 @@ export default function Timer() {
             <li key={solveIndex}>
                 <button
                     className={`w-full text-center px-4 py-2 hover:bg-secondary/20 
-            ${dropDown[solveIndex]
+							${dropDown[solveIndex]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
                     } 
-            flex items-center justify-center gap-2 transition-all duration-200`}
-                    onClick={() => (solveIndex < currentSession?.session?.timerData.length - 4) ? toggleDropDown(solveIndex) : ""}
+							flex items-center justify-center gap-2 transition-all duration-200`
+                    }
                 >
-                    <span>{time}</span>
-                    <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solveIndex] ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                        />
-                    </svg>
+                    <span className='whitespace-pre-line'>{time}</span>
                 </button>
-                <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
-            ${dropDown[solveIndex] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
-                >
-                    <div className="bg-secondary/20 flex flex-col gap-2 rounded-b-2xl transform transition-transform duration-200">
-                        {/* Increased padding and font size */}
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 0]) ? getScramble(currentSession?.session?.timerData[solveIndex + 0]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 1]) ? getScramble(currentSession?.session?.timerData[solveIndex + 1]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 2]) ? getScramble(currentSession?.session?.timerData[solveIndex + 2]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 3]) ? getScramble(currentSession?.session?.timerData[solveIndex + 3]?.solveID) : ""}
-                        </label>
-                        <label className="hover:bg-accent/10 px-4 py-2 text-center font-bold text-xs">
-                            {(currentSession?.session?.timerData[solveIndex + 4]) ? getScramble(currentSession?.session?.timerData[solveIndex + 4]?.solveID) : ""}
-                        </label>
-                    </div>
-                </div>
             </li>
         )
     }
@@ -580,7 +540,7 @@ export default function Timer() {
         return (
             <li key={solve.solveID}>
                 <button
-                    className={`w-full text-center px-2 py-1 hover:bg-secondary/20 
+                    className={`relative w-full text-center px-4 py-2 hover:bg-secondary/20 
                         ${dropDown[solve.solveID]
                         ? 'bg-secondary/20 rounded-t-2xl hover:bg-accent/10'
                         : 'rounded-2xl hover:bg-accent/10'
@@ -590,7 +550,7 @@ export default function Timer() {
                 >
                     <span>{time}</span>
                     <svg
-                        className={`w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
+                        className={`absolute right-5 w-4 h-4 transition-transform duration-300 ${dropDown[solve.solveID] ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -607,11 +567,13 @@ export default function Timer() {
                     className={`overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl
                         ${dropDown[solve.solveID] ? 'max-h-600 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
-                    <div
-                        className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
-                        <label className="hover:bg-accent/10 px-2 py-1 text-center font-bold text-xs">
-                            {getScramble(solve.solveID)}
-                        </label>
+                    <div className="bg-secondary/20 flex flex-col gap-1 rounded-b-2xl transform transition-transform duration-200">
+                        {currentSession?.session?.isThreeByThree
+                            ? <label className="hover:bg-accent/10 px-2 py-1 text-center font-bold text-xs">
+                                {getScramble(solve.solveID)}
+                            </label>
+                            : <div></div>
+                        }
                         <button className="hover:bg-accent/10 px-2 py-1"
                                 onClick={() => handleStatusChange(solve.solveID, "OK", valueRef.current).then(() => toggleDropDown(solve.solveID))}
                         >
@@ -643,19 +605,24 @@ export default function Timer() {
         console.log("Recording completed, video size:", blob.size);
     };
 
-		// Make a GET request to the Scramble API server
-		const updateCurrentScramble = async () => {
-			setLoading(false);
-			try {
-				const data = await axios.get('https://scrambler-api-s5qg.onrender.com/getScramble')
-				.then(response => setScramble(response.data));
-				setLoading(true);
-			} catch {}
-		}
+    // Make a GET request to the Scramble API server
+    const updateCurrentScramble = async () => {
+        if (!currentSession?.session?.isThreeByThree){
+            setScramble('');
+        }
+        else {
+            setLoading(false);
+            try {
+                const data = await axios.get('https://scrambler-api-s5qg.onrender.com/getScramble')
+                    .then(response => setScramble(response.data));
+                setLoading(true);
+            } catch {}
+        }
+    }
 
     return (
         <section className="relative flex h-full">
-            <aside className="w-3/12 p-4 bg-primary/20 flex flex-col">
+            <aside className="w-1/4 p-4 bg-primary/20 flex flex-col">
                 <div className="flex flex-col items-center gap-4 lg:flex-row mb-4 h-fit justify-between">
                     <select
                         className="dropdown w-full text-xl h-12"
@@ -709,10 +676,10 @@ export default function Timer() {
                         {
                             (updateData !== null) && updateData.map((item, index) => (
                                 <li key={index} className="flex justify-between">
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createTimeData(item)}
                                     </ul>
-                                    <ul className="flex-grow">
+                                    <ul className="flex-grow w-1/2">
                                         {createAo5Data(item)}
                                     </ul>
                                 </li>
@@ -728,20 +695,20 @@ export default function Timer() {
                 />
             </aside>
 
-            <main className="flex flex-col items-center justify-center w-9/12">
-								<div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-9/12 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
-										{loading
-										? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
-										: <div role="status">
-													<svg aria-hidden="true" className="inline w-8 h-8 text-background animate-spin fill-primary/60" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-															<path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-															<path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-													</svg>
-													<span className="sr-only">Loading...</span>
-											</div>
-										}
-										<button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
-								</div>
+            <main className="flex flex-col items-center justify-center w-3/4">
+                <div className={`${currentSession?.session?.isThreeByThree ? 'inline' : 'hidden'} absolute top-0 flex items-center justify-center w-3/4 h-[15%] bg-primary/20 flex-wrap ${openAddSession ? '-z-10' : ''}`}>
+                    {loading
+                        ? <p id="scramble" className="whitespace-pre-line text-2xl text-center text-text/90 md:flex">{scramble.replace(/ /g,'.').replaceAll('..','.').replaceAll('.','  ')}</p>
+                        : <div role="status">
+                            <svg aria-hidden="true" className="inline w-8 h-8 text-background animate-spin fill-primary/60" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                            </svg>
+                            <span className="sr-only">Loading...</span>
+                        </div>
+                    }
+                    <button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
+                </div>
                 <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
                     0.000
                 </p>
