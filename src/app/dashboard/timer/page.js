@@ -665,8 +665,8 @@ export default function Timer() {
                         <td className="bg-primary p-2 rounded text-center w-[50%]">Session Best Ao5:</td>
                     </tr>
                     <tr>
-                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pbAo5}</td>
                         <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pb}</td>
+                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pbAo5}</td>
                     </tr>
                     </tbody>
                 </table>
