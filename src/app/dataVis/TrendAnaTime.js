@@ -95,9 +95,24 @@ export default function SolveTimeTrend({ solves }) {
     }, [xDomain, containerRef]);  // 🔥 Ensure chart updates when xDomain or container size changes
 
     useEffect(() => {
-        if (!solves || !Array.isArray(solves) || solves.length === 0) return;
+        if (!solves || solves.length === 0) {
+            console.warn("⚠️ No solves data available!");
+            d3.select(containerRef.current).selectAll('*').remove(); // 🔥 Clear chart immediately
+            setClusters([]);
+            setXDomain(null);
+            return;
+        }
 
-        console.log("🔍 Running cluster detection...");
+        const container = containerRef.current;
+        if (!container) {
+            console.warn("⚠️ Container reference is null!");
+            return;
+        }
+
+        console.log("📏 Updating chart dimensions after session switch...");
+        d3.select(container).selectAll('*').remove(); // 🔥 Ensure no old elements remain
+
+        // Detect clusters before drawing
         const detectedClusters = findClusters(solves);
         setClusters(detectedClusters);
 
@@ -109,15 +124,18 @@ export default function SolveTimeTrend({ solves }) {
             ];
 
             setXDomain(newDomain);
-            xDomainRef.current = newDomain;  // ✅ Ensure ref is updated
+            xDomainRef.current = newDomain;
 
-            // ❗ Log AFTER setting the state to reflect the correct value
             console.log("✅ X-Domain initialized to first cluster:", newDomain);
         }
 
-        // Attach resize event
+        drawSolveTimeTrend(solves);
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            d3.select(container).selectAll('*').remove(); // 🔥 Ensure cleanup on unmount
+        };
     }, [solves]);  // <-- Runs only on first load
 
     if (showIndexView) {
@@ -242,7 +260,7 @@ export default function SolveTimeTrend({ solves }) {
                 }
                 return {
                     timestamp: new Date(solve.timestamp),
-                    time: solve.time / 1000
+                    time: solve.adjustedTime / 1000
                 };
             })
             .filter(d => d !== null);  // Remove invalid entries

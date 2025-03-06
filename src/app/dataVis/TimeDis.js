@@ -45,12 +45,18 @@ export default function SolveTimeDistribution({ solves }) {
     }, []);
 
     useEffect(() => {
-        if (containerRef.current && solves.length > 0) {
-            drawSolveTimeDistribution(solves);
-            window.addEventListener('resize', handleResize);
+        if (solves.length === 0) {
+            d3.select(containerRef.current).selectAll('*').remove(); // Clear chart immediately
+            return;
         }
 
-        return () => window.removeEventListener('resize', handleResize);
+        drawSolveTimeDistribution(solves);
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            d3.select(containerRef.current).selectAll('*').remove(); // Ensure chart clears before re-rendering
+        };
     }, [solves]);
 
     function handleResize() {
@@ -74,7 +80,7 @@ export default function SolveTimeDistribution({ solves }) {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
-        const times = data.map((solve) => solve.time / 1000);
+        const times = data.map((solve) => solve.adjustedTime / 1000);
         const minData = Math.floor(d3.min(times) * 2) / 2;
         const maxData = Math.ceil(d3.max(times) * 2) / 2;
         const xScale = d3.scaleLinear().domain([minData, maxData]).range([50, width - 50]);

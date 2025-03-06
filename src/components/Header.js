@@ -28,7 +28,6 @@ export default function Header({ variant = 'home' }) {
     },
     timer: {
       links: [
-        { href: "/dashboard/data", text: "Show Data" },
         { href: "/dataVis", text: "Data Visualization" },
         { action: handleSignOut, text: "Sign Out" }
       ]

@@ -69,16 +69,25 @@ export default function SolveDensity({ solves }) {
     }, [colors]);
 
     useEffect(() => {
-        if (solves.length > 0) {
-            const times = solves.map((solve) => solve.time / 1000).sort((a, b) => a - b);
-            const bandwidth = ((d3.max(times) - d3.min(times)) / detail) * 1.2; // Slightly increased smoothing
-            const computedDensityData = kde(times, bandwidth);
-            setDensityData(computedDensityData);
-
-            drawSolveDensity(solves, computedDensityData);
-            window.addEventListener('resize', handleResize);
+        if (solves.length === 0) {
+            setDensityData([]);  // Reset density data
+            d3.select(containerRef.current).selectAll('*').remove(); // Ensure chart clears immediately
+            return;
         }
-        return () => window.removeEventListener('resize', handleResize);
+
+        const times = solves.map((solve) => solve.adjustedTime / 1000).sort((a, b) => a - b);
+        const bandwidth = ((d3.max(times) - d3.min(times)) / detail) * 1.2; // Slightly increased smoothing
+        const computedDensityData = kde(times, bandwidth);
+
+        setDensityData(computedDensityData);
+
+        drawSolveDensity(solves, computedDensityData);
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            d3.select(containerRef.current).selectAll('*').remove(); // Ensure chart clears before re-rendering
+        };
     }, [solves, detail, trim]);
 
     function handleResize() {
@@ -103,7 +112,7 @@ export default function SolveDensity({ solves }) {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
-        const times = data.map((solve) => solve.time / 1000).sort((a, b) => a - b);
+        const times = data.map((solve) => solve.adjustedTime / 1000).sort((a, b) => a - b);
         const ao5 = computeRollingAverage(times, 5);
         const ao12 = computeRollingAverage(times, 12);
         const bandwidth = (d3.max(times) - d3.min(times)) / detail;
