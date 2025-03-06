@@ -248,9 +248,9 @@ export default function VideoRecorder({ isRecording, onRecordingComplete }) {
 
     return (
         <>
-            <div className="mt-auto pt-4 border-t border-text/10">
+            <div className="mt-auto p-4 pt-4 rounded-tl-xl absolute bottom-0 right-0 border-t bg-primary border-text/10 w-[25%">
                 <div className="flex items-center justify-between">
-                    <label className="text-lg font-medium cursor-pointer" onClick={toggleVideoMode}>
+                    <label className="text-lg m-2 font-medium cursor-pointer" onClick={toggleVideoMode}>
                         Video Mode {videoMode ? '(On)' : '(Off)'}
                     </label>
                     <button 
@@ -272,7 +272,7 @@ export default function VideoRecorder({ isRecording, onRecordingComplete }) {
                 {/* Status message for better feedback */}
                 <div className="text-sm mt-1">
                     {videoMode && cameraPermission === 'granted' && (
-                        <p className="text-green-500">
+                        <p className="text-secondary-500">
                             Camera active {mimeType.includes('mp4') ? '(MP4)' : '(WebM)'}
                             {isRecording && ' - Recording'}
                         </p>

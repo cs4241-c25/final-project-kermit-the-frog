@@ -56,7 +56,7 @@ export default function Timer() {
     }, [selectedSession]);
 
 		// State for the current 3x3 scramble
-		const [scramble, setScramble] = useState('');
+		const [scramble, setScramble] = useState('No Scramble Generated');
 		const [loading, setLoading] = useState(false);
 		const scrambleRef = useRef('');
 
@@ -712,6 +712,11 @@ export default function Timer() {
                 <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
                     0.000
                 </p>
+                {/* Video recording component */}
+                <VideoRecorder
+                    isRecording={isRecording}
+                    onRecordingComplete={handleRecordingComplete}
+                />
             </main>
         </section>
     );
