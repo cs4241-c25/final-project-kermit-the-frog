@@ -87,7 +87,7 @@ export default function DataDashboard() {
              data-theme={theme}>
 
             {/* Navigation Tabs */}
-            <div className="bg-primary text-text flex justify-center space-x-6 p-2">
+            <div className="bg-primary text-text flex justify-center space-x-6 p-2 w-fit md:w-full">
                 {/* 🔹 Session Selection Dropdown */}
                 <select
                     className="px-4 py-2 border rounded bg-background text-text"
@@ -111,13 +111,13 @@ export default function DataDashboard() {
                     Trend Analysis
                 </button>
                 <button
-                    className={`px-4 py-2 ${activeTab === 'histogram' ? 'border-b-2 border-accent font-bold' : ''}`}
+                    className={`px-4 py-2 ${activeTab === 'histogram' ? 'border-b-2 border-accent font-bold' : ''} hidden md:block`}
                     onClick={() => setActiveTab('histogram')}
                 >
                     Time Distribution
                 </button>
                 <button
-                    className={`px-4 py-2 ${activeTab === 'density' ? 'border-b-2 border-accent font-bold' : ''}`}
+                    className={`px-4 py-2 ${activeTab === 'density' ? 'border-b-2 border-accent font-bold' : ''} hidden md:block`}
                     onClick={() => setActiveTab('density')}
                 >
                     Solve Density
