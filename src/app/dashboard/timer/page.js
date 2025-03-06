@@ -657,12 +657,18 @@ export default function Timer() {
                 </div>
 
                 {/* 2x2 Grid Section */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-primary p-2 rounded text-center">PB Bo1</div>
-                    <div className="bg-primary p-2 rounded text-center">{pb}</div>
-                    <div className="bg-primary p-2 rounded text-center">PB Ao5</div>
-                    <div className="bg-primary p-2 rounded text-center">{pbAo5}</div>
-                </div>
+                <table className="text-text font-semibold text-lg border-separate border-spacing-1 mb-4">
+                    <tbody>
+                    <tr>
+                        <td className="bg-primary p-2 rounded text-center w-[50%]">Session Best:</td>
+                        <td className="bg-primary p-2 rounded text-center w-[50%]">Session Best Ao5:</td>
+                    </tr>
+                    <tr>
+                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pbAo5}</td>
+                        <td className="bg-primary/55 p-2 rounded text-center w-[50%]">{pb}</td>
+                    </tr>
+                    </tbody>
+                </table>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <h2 className="text-3xl font-bold text-center">Time</h2>
                     <h2 className="text-3xl font-bold text-center">Ao5</h2>
@@ -687,12 +693,6 @@ export default function Timer() {
                         }
                     </ul>
                 </div>
-
-                {/* Video recording component */}
-                <VideoRecorder
-                    isRecording={isRecording}
-                    onRecordingComplete={handleRecordingComplete}
-                />
             </aside>
 
             <main className="flex flex-col items-center justify-center w-3/4">
@@ -709,12 +709,14 @@ export default function Timer() {
 										}
 										<button type="button" className={`xl:absolute right-14 button px-2.5 py-2 text-lg w-auto ml-10 md:flex ${currentSession?.session?.isThreeByThree ? 'md:inline hidden' : 'hidden'}`} onClick={function(e){document.activeElement.blur(); updateCurrentScramble()}}>New Scramble</button>
 								</div>
-                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''}`}>
+                <p id="timer" className={`text-8xl font-bold ${timerColor} ${currentSession?.session?.isThreeByThree ? 'pt-[4.16%]' : ''} ${expandedPreview? 'ml-[25%] w-[70%]' : ''}`}>
                     0.000
                 </p>
                 {/* Video recording component */}
                 <VideoRecorder
                     isRecording={isRecording}
+                    isExpanded={() => {setExpandedPreview(true)}}
+                    isClosed={() => {setExpandedPreview(false)}}
                     onRecordingComplete={handleRecordingComplete}
                 />
             </main>
