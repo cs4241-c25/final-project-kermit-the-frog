@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@/lib/ThemeContext'; // Import theme context
 const d3 = await import('d3');
 import "@/styles/globals.css";
-import TrendAna from './TrendAnaTime';
+import TrendAna from './TrendAnaIndex';
 import TimeDis from './TimeDis';
 import SolveDen from './SolveDen';
 
@@ -41,17 +41,25 @@ export default function DataDashboard() {
                 if (data.sessionResults === "Session found" && Array.isArray(data.session)) {
                     const foundSession = data.session.find(s => s.sessionName === selectedSession);
                     if (foundSession) {
-                        console.log("Selected Session Data (Raw):", foundSession.timerData);
+                        console.log("🟢 Selected Session Data (Raw):", foundSession.timerData);
 
                         // ✅ Process solves to handle +2 and DNF
-                        const processedSolves = foundSession.timerData.map(solve => {
+                        const processedSolves = foundSession.timerData.map((solve, index) => {
+                            console.log(`🔍 Processing Solve #${index + 1}:`, solve);
+
                             let adjustedTime = solve.time;
 
                             if (solve.status === "+2") {
+                                console.log(`✅ Solve #${index + 1} has +2 penalty (Original Time: ${solve.time})`);
                                 adjustedTime += 2000; // Convert +2 to milliseconds
                             } else if (solve.status === "DNF") {
+                                console.log(`🚨 Solve #${index + 1} is a DNF (Original Time: ${solve.time})`);
                                 adjustedTime = null; // Represent DNF as null
+                            } else {
+                                console.log(`ℹ️ Solve #${index + 1} has no penalty (Status: ${solve.status})`);
                             }
+
+                            console.log(`🕒 Adjusted Time for Solve #${index + 1}:`, adjustedTime);
 
                             return {
                                 ...solve,
@@ -60,19 +68,19 @@ export default function DataDashboard() {
                             };
                         });
 
-                        console.log("Processed Solves:", processedSolves);
+                        console.log("🔵 Processed Solves:", processedSolves);
 
                         setSolves(processedSolves); // ✅ Store processed solves
                     } else {
-                        console.warn("Selected session not found in API response.");
+                        console.warn("⚠️ Selected session not found in API response.");
                         setSolves([]);
                     }
                 } else {
                     setSolves([]);
                 }
             })
-            .catch(error => console.error('Error fetching session data:', error));
-    }, [selectedSession]); // 🔥 Fetch data when session changes // 🔥 Fetch data when session changes // 🔥 Refetch when session changes // 🔥 Fetch data when session changes
+            .catch(error => console.error('❌ Error fetching session data:', error));
+    }, [selectedSession]); // 🔥 Fetch data when session changes // 🔥 Fetch data when session changes // 🔥 Fetch data when session changes // 🔥 Refetch when session changes // 🔥 Fetch data when session changes
 
     return (
         <div className="max-h-screen max-w-screen transition-colors duration-300"

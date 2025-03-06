@@ -75,7 +75,7 @@ export default function SolveDensity({ solves }) {
             return;
         }
 
-        const times = solves.map((solve) => solve.time / 1000).sort((a, b) => a - b);
+        const times = solves.map((solve) => solve.adjustedTime / 1000).sort((a, b) => a - b);
         const bandwidth = ((d3.max(times) - d3.min(times)) / detail) * 1.2; // Slightly increased smoothing
         const computedDensityData = kde(times, bandwidth);
 
@@ -112,7 +112,7 @@ export default function SolveDensity({ solves }) {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
-        const times = data.map((solve) => solve.time / 1000).sort((a, b) => a - b);
+        const times = data.map((solve) => solve.adjustedTime / 1000).sort((a, b) => a - b);
         const ao5 = computeRollingAverage(times, 5);
         const ao12 = computeRollingAverage(times, 12);
         const bandwidth = (d3.max(times) - d3.min(times)) / detail;

@@ -130,7 +130,7 @@ export default function SolveTimeTrend({ solves }) {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
-        const times = data.map((solve) => solve.time / 1000);
+        const times = data.map((solve) => solve.adjustedTime / 1000);
         const ao5 = computeRollingAverage(times, 5);
         const ao12 = computeRollingAverage(times, 12);
 
